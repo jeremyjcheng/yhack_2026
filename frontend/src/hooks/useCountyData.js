@@ -49,6 +49,10 @@ export default function useCountyData() {
         }
       });
 
+      // us-atlas includes all counties (incl. territories). Only render counties present in
+      // county-data.json — otherwise removed areas (e.g. Puerto Rico) would still draw as shapes.
+      geo.features = geo.features.filter(f => map[f.properties.fips] != null);
+
       if (!cancelled) {
         countyDataMap.current = map;
         allCounties.current = rawCounties;
