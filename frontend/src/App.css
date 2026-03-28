@@ -48,3 +48,82 @@ html, body, #root {
 .mapboxgl-ctrl-attrib {
   font-size: 11px !important;
 }
+
+.static-page {
+  height: calc(100vh - 56px);
+  overflow: auto;
+  padding: 28px 24px 48px;
+  max-width: 42rem;
+  margin: 0 auto;
+}
+
+.static-page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.75rem;
+}
+
+.static-page-lead {
+  font-size: 1.05rem;
+  color: var(--color-text-secondary);
+  line-height: 1.55;
+  margin-bottom: 2rem;
+}
+
+.static-section {
+  margin-bottom: 1.75rem;
+}
+
+.static-section h2 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.static-section p {
+  line-height: 1.6;
+  color: var(--color-text);
+}
+
+.static-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  line-height: 1.65;
+  color: var(--color-text);
+}
+
+.static-list li {
+  margin-bottom: 0.65rem;
+}
+
+.static-list li strong {
+  font-weight: 600;
+}
+
+.static-section a {
+  color: var(--color-primary);
+}
+
+.static-page code {
+  font-size: 0.88em;
+  padding: 0.12em 0.35em;
+  border-radius: 4px;
+  background: var(--color-border);
+}
+
+.static-back {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.static-back a {
+  color: var(--color-primary);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.static-back a:hover {
+  text-decoration: underline;
+}

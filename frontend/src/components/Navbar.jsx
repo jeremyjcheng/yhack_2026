@@ -1,9 +1,14 @@
+import { NavLink, Link } from 'react-router-dom';
 import styles from './Navbar.module.css';
+
+function tabClass({ isActive }) {
+  return `${styles.tab}${isActive ? ` ${styles.active}` : ''}`;
+}
 
 export default function Navbar() {
   return (
     <nav className={styles.navbar}>
-      <div className={styles.brand}>
+      <Link to="/" className={styles.brand}>
         <div className={styles.logo}>
           <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="16" cy="16" r="14" stroke="white" strokeWidth="2"/>
@@ -12,11 +17,17 @@ export default function Navbar() {
           </svg>
         </div>
         <span className={styles.title}>Climate Risk Advisor</span>
-      </div>
+      </Link>
       <div className={styles.tabs}>
-        <button className={`${styles.tab} ${styles.active}`}>Map</button>
-        <button className={styles.tab}>Insights</button>
-        <button className={styles.tab}>About</button>
+        <NavLink to="/" end className={tabClass}>
+          Map
+        </NavLink>
+        <NavLink to="/insights" className={tabClass}>
+          Insights
+        </NavLink>
+        <NavLink to="/about" className={tabClass}>
+          About
+        </NavLink>
       </div>
     </nav>
   );
