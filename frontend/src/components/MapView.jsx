@@ -104,6 +104,20 @@ const MapView = forwardRef(function MapView(
 
   const interactiveLayerIds = useMemo(() => ['county-fills'], []);
 
+  if (!MAPBOX_TOKEN) {
+    return (
+      <div className={styles.mapContainer}>
+        <div className={styles.tokenMissing}>
+          <p className={styles.tokenMissingTitle}>Mapbox token missing</p>
+          <p className={styles.tokenMissingBody}>
+            Add <code>MAPBOX_ACCESS_TOKEN</code> to a <code>.env</code> file at the project root
+            (or in <code>frontend/</code>), then restart <code>npm run dev</code>.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.mapContainer}>
       <Map

@@ -13,8 +13,12 @@ const repoRoot = path.resolve(__dirname, '..');
  *   Use Mapbox dashboard URL restrictions on that token to limit abuse.
  */
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, repoRoot, '');
-  const mapboxToken = env.MAPBOX_ACCESS_TOKEN || '';
+  const envRoot = loadEnv(mode, repoRoot, '');
+  const envFrontend = loadEnv(mode, __dirname, '');
+  const mapboxToken =
+    envRoot.MAPBOX_ACCESS_TOKEN ||
+    envFrontend.MAPBOX_ACCESS_TOKEN ||
+    '';
 
   const mapboxProxy = {
     '/api/mapbox': {
