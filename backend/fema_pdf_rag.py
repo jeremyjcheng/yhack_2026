@@ -9,14 +9,41 @@ from typing import Any
 
 import faiss
 import numpy as np
+import pandas as pd
 import requests
 
 
+HEAT_COL = "Heat Wave - Hazard Type Risk Index Score"
+INLAND_FLOOD_COL = "Inland Flooding - Hazard Type Risk Index Score"
+COASTAL_FLOOD_COL = "Coastal Flooding - Hazard Type Risk Index Score"
+HURRICANE_COL = "Hurricane - Hazard Type Risk Index Score"
+WILDFIRE_COL = "Wildfire - Hazard Type Risk Index Score"
+DROUGHT_COL = "Drought - Hazard Type Risk Index Score"
+
+RISK_COLUMNS = [
+    HEAT_COL, INLAND_FLOOD_COL, COASTAL_FLOOD_COL,
+    HURRICANE_COL, WILDFIRE_COL, DROUGHT_COL,
+]
+
+DEFAULT_COUNTY_CSV = "data/final_df.csv"
+DEFAULT_RISK_CSV = "data/risk.csv"
 DEFAULT_INDEX_PATH = "data/FAISS/fema_pdf.index"
 DEFAULT_CHUNKS_PATH = "data/FAISS/fema_pdf_chunks.jsonl"
 DEFAULT_META_PATH = "data/FAISS/fema_pdf_meta.json"
 DEFAULT_EMBED_MODEL = "gemini-embedding-001"
 DEFAULT_GENERATE_MODEL = "gemini-3-flash-preview"
+
+DEMOGRAPHIC_COLS = [
+    "Population (2020)",
+    "Building Value ($)",
+    "Agriculture Value ($)",
+    "Area (sq mi)",
+    "National Risk Index - Score - Composite",
+    "National Risk Index - Rating - Composite",
+    "Expected Annual Loss - Total - Composite",
+    "Social Vulnerability - Score",
+    "Community Resilience - Score",
+]
 
 
 def load_dotenv(path: Path) -> None:
@@ -28,6 +55,177 @@ def load_dotenv(path: Path) -> None:
             continue
         key, value = line.split("=", 1)
         os.environ[key.strip()] = value.strip().strip('"').strip("'")
+
+
+@lru_cache(maxsize=1)
+def load_county_data(csv_path: str) -> pd.DataFrame:
+    df = pd.read_csv(csv_path)
+    normalized = df.copy()
+    normalized["fips_code"] = normalized["fips_code"].astype(str).str.zfill(5)
+    if "name" not in normalized.columns:
+        normalized["name"] = ""
+    if "state" not in normalized.columns:
+        normalized["state"] = ""
+    normalized["name"] = normalized["name"].astype(str)
+    normalized["state"] = normalized["state"].astype(str)
+    normalized["_name_norm"] = normalized["name"].str.lower().str.strip()
+    normalized["_state_norm"] = normalized["state"].str.lower().str.strip()
+    return normalized
+
+
+def _hazard_to_unit(value: object) -> float:
+    try:
+        n = float(value)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return 0.0
+    if n != n:
+        return 0.0
+    return max(0.0, min(1.0, n / 100.0))
+
+
+def _weighted_avg(entries: list[tuple[float, float]]) -> float:
+    valid = [(v, w) for v, w in entries if w > 0]
+    if not valid:
+        return 0.0
+    return sum(v * w for v, w in valid) / sum(w for _, w in valid)
+
+
+def compute_risk_breakdown(row: pd.Series) -> dict[str, object]:
+    heat = _hazard_to_unit(row.get(HEAT_COL))
+    inland = _hazard_to_unit(row.get(INLAND_FLOOD_COL))
+    coastal = _hazard_to_unit(row.get(COASTAL_FLOOD_COL))
+    hurricane = _hazard_to_unit(row.get(HURRICANE_COL))
+    wildfire_raw = _hazard_to_unit(row.get(WILDFIRE_COL))
+    drought = _hazard_to_unit(row.get(DROUGHT_COL))
+
+    flood = _weighted_avg([(inland, 0.6), (coastal, 0.2), (hurricane, 0.2)])
+    wildfire = _weighted_avg([(wildfire_raw, 0.8), (drought, 0.2)])
+    overall = (heat + flood + wildfire) / 3.0
+
+    return {
+        "heat": round(heat, 4),
+        "flood": round(flood, 4),
+        "wildfire": round(wildfire, 4),
+        "overall": round(overall, 4),
+        "components": {
+            "heat_wave_score": round(row.get(HEAT_COL, 0) or 0, 2),
+            "inland_flood_score": round(row.get(INLAND_FLOOD_COL, 0) or 0, 2),
+            "coastal_flood_score": round(row.get(COASTAL_FLOOD_COL, 0) or 0, 2),
+            "hurricane_score": round(row.get(HURRICANE_COL, 0) or 0, 2),
+            "wildfire_score": round(row.get(WILDFIRE_COL, 0) or 0, 2),
+            "drought_score": round(row.get(DROUGHT_COL, 0) or 0, 2),
+        },
+    }
+
+
+def resolve_counties(
+    df: pd.DataFrame,
+    question: str,
+    county: str | None = None,
+    state: str | None = None,
+    fips: str | None = None,
+    limit: int = 3,
+    risk_df: pd.DataFrame | None = None,
+) -> list[dict[str, object]]:
+    if fips:
+        hit = df.loc[df["fips_code"] == str(fips).strip().zfill(5)]
+        if not hit.empty:
+            return [_county_evidence(hit.iloc[0], risk_df)]
+
+    filtered = df
+    if county:
+        cn = county.lower().strip().replace(" county", "")
+        filtered = filtered.loc[filtered["_name_norm"].str.contains(cn, na=False)]
+    if state:
+        sn = state.lower().strip()
+        filtered = filtered.loc[filtered["_state_norm"] == sn]
+    if not filtered.empty:
+        return [
+            _county_evidence(filtered.iloc[i], risk_df)
+            for i in range(min(limit, len(filtered)))
+        ]
+
+    q_lower = question.lower()
+    for _, row in df.iterrows():
+        name = str(row.get("_name_norm", ""))
+        st = str(row.get("_state_norm", ""))
+        if name and len(name) > 2 and name in q_lower and st in q_lower:
+            return [_county_evidence(row, risk_df)]
+
+    return []
+
+
+@lru_cache(maxsize=1)
+def load_risk_data(csv_path: str) -> pd.DataFrame:
+    p = Path(csv_path)
+    if not p.is_file():
+        return pd.DataFrame()
+    df = pd.read_csv(csv_path, encoding="utf-8", encoding_errors="replace")
+    fips_col = "State-County FIPS Code"
+    if fips_col in df.columns:
+        df["_fips_norm"] = df[fips_col].astype(str).str.zfill(5)
+    return df
+
+
+def _get_demographics(fips: str, risk_df: pd.DataFrame) -> dict[str, object]:
+    if risk_df.empty or "_fips_norm" not in risk_df.columns:
+        return {}
+    hit = risk_df.loc[risk_df["_fips_norm"] == str(fips).zfill(5)]
+    if hit.empty:
+        return {}
+    row = hit.iloc[0]
+    demo: dict[str, object] = {}
+    for col in DEMOGRAPHIC_COLS:
+        if col in row.index:
+            val = row[col]
+            try:
+                demo[col] = round(float(val), 2)
+            except (TypeError, ValueError):
+                demo[col] = str(val) if pd.notna(val) else None
+    hazard_details: dict[str, object] = {}
+    for col in row.index:
+        if any(kw in str(col) for kw in [
+            "Exposure -", "Expected Annual Loss -",
+            "Annualized Frequency", "Historic Loss Ratio",
+        ]):
+            val = row[col]
+            try:
+                hazard_details[str(col)] = round(float(val), 4)
+            except (TypeError, ValueError):
+                pass
+    if hazard_details:
+        demo["hazard_details"] = hazard_details
+    return demo
+
+
+def _county_evidence(
+    row: pd.Series,
+    risk_df: pd.DataFrame | None = None,
+) -> dict[str, object]:
+    risk = compute_risk_breakdown(row)
+    all_scores: dict[str, object] = {}
+    for col in row.index:
+        if "Hazard Type Risk Index" in str(col):
+            val = row[col]
+            try:
+                all_scores[str(col)] = round(float(val), 2)
+            except (TypeError, ValueError):
+                pass
+    fips = str(row.get("fips_code", ""))
+    evidence: dict[str, object] = {
+        "fips_code": fips,
+        "name": str(row.get("name", "")),
+        "state": str(row.get("state", "")),
+        "lat": row.get("lat"),
+        "lon": row.get("lon"),
+        "all_hazard_scores": all_scores,
+        "derived_risk": risk,
+    }
+    if risk_df is not None and not risk_df.empty:
+        demographics = _get_demographics(fips, risk_df)
+        if demographics:
+            evidence["demographics"] = demographics
+    return evidence
 
 
 def _extract_json_object(text: str) -> dict[str, Any] | None:
@@ -175,6 +373,7 @@ def build_prompt(
     *,
     question: str,
     retrieved_chunks: list[dict[str, Any]],
+    county_evidence: list[dict[str, object]] | None = None,
     history: list[dict[str, str]] | None = None,
 ) -> str:
     clipped_history = (history or [])[-6:]
@@ -187,17 +386,43 @@ def build_prompt(
         }
         for item in retrieved_chunks
     ]
+
+    county_block = ""
+    if county_evidence:
+        county_block = (
+            "County-level data (actual values from the National Risk Index dataset):\n"
+            f"{json.dumps(county_evidence, ensure_ascii=True, default=str)}\n\n"
+        )
+
     return (
-        "You are a technical assistant for FEMA National Risk Index methodology.\n"
-        "Answer ONLY from the provided excerpts from the official FEMA PDF.\n"
-        "If the excerpts do not support an answer, state that explicitly.\n\n"
+        "You are a technical assistant for the FEMA National Risk Index.\n"
+        "You have two sources of information:\n"
+        "1. Excerpts from the official FEMA NRI technical documentation (methodology, "
+        "equations, definitions).\n"
+        "2. Actual county-level hazard scores and derived risk values from the NRI dataset.\n\n"
+        "Use BOTH sources to answer. When county data is provided, analyze the actual "
+        "scores to explain why a county has high or low risk. Infer causes from the "
+        "data -- for example, if a heat wave score is low relative to neighboring "
+        "counties, consider population, exposure, building value, and agricultural "
+        "value as factors (these drive the Expected Annual Loss that feeds the score). "
+        "Combine your understanding of the FEMA methodology with the real numbers to "
+        "give an insightful, data-backed answer.\n\n"
+        "If the county data shows a specific pattern (e.g. very low score), explain "
+        "the likely reasons using the methodology (population, exposure, consequence "
+        "types, annualized frequency, historic loss ratio, etc.).\n\n"
+        "Response style:\n"
+        "- Be simple, straightforward, concise, direct, and accurate.\n"
+        "- Format your answer as exactly 4-5 bullet points.\n"
+        "- Each bullet must start with the Unicode bullet character '\u2022 ' (U+2022 followed by a space).\n"
+        "- Each bullet point must be exactly ONE short sentence (no more than ~25 words).\n"
+        "- Do not include citations, sources, or page references in the answer text.\n\n"
         "Return STRICT JSON with keys:\n"
-        '- "answer": string\n'
-        '- "citations": array of short strings referencing page/chunk ids\n'
+        '- "answer": string (4-5 bullet points separated by newlines, each starting with \u2022)\n'
+        '- "citations": empty array []\n'
         '- "debug_context": object\n\n'
-        "Do not invent equations, data points, or definitions not present in excerpts.\n\n"
         f"Conversation history:\n{json.dumps(clipped_history, ensure_ascii=True)}\n\n"
-        f"Evidence excerpts:\n{json.dumps(evidence, ensure_ascii=True)}\n\n"
+        f"{county_block}"
+        f"FEMA documentation excerpts:\n{json.dumps(evidence, ensure_ascii=True)}\n\n"
         f"User question:\n{question}\n"
     )
 
@@ -233,6 +458,9 @@ def answer_from_fema_pdf(
     *,
     repo_root: Path,
     question: str,
+    county: str | None = None,
+    state: str | None = None,
+    fips: str | None = None,
     history: list[dict[str, str]] | None = None,
     top_k: int = 6,
 ) -> dict[str, Any]:
@@ -265,7 +493,31 @@ def answer_from_fema_pdf(
         embedding_model=embedding_model,
         top_k=top_k,
     )
-    prompt = build_prompt(question=question, retrieved_chunks=retrieved, history=history)
+
+    county_csv = repo_root / DEFAULT_COUNTY_CSV
+    risk_csv = repo_root / DEFAULT_RISK_CSV
+    county_evidence: list[dict[str, object]] = []
+    if county_csv.is_file():
+        try:
+            county_df = load_county_data(str(county_csv))
+            risk_df = load_risk_data(str(risk_csv)) if risk_csv.is_file() else pd.DataFrame()
+            county_evidence = resolve_counties(
+                county_df,
+                question,
+                county=county,
+                state=state,
+                fips=fips,
+                risk_df=risk_df,
+            )
+        except Exception:
+            county_evidence = []
+
+    prompt = build_prompt(
+        question=question,
+        retrieved_chunks=retrieved,
+        county_evidence=county_evidence,
+        history=history,
+    )
     model_payload = call_gemini_json(prompt=prompt, api_key=api_key)
     if not model_payload:
         result = deterministic_fallback(question, retrieved)

@@ -122,6 +122,9 @@ def chat(payload: ChatRequest) -> dict[str, object]:
         response = answer_from_fema_pdf(
             repo_root=REPO_ROOT,
             question=payload.question.strip(),
+            county=payload.county.strip() if payload.county else None,
+            state=payload.state.strip() if payload.state else None,
+            fips=payload.fips.strip() if payload.fips else None,
             history=[
                 {"role": msg.role.strip(), "content": msg.content.strip()}
                 for msg in payload.history
