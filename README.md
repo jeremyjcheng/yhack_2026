@@ -9,6 +9,37 @@ The repository includes:
 - A small Python data-processing workflow to merge source datasets.
 - Optional FAISS-based nearest-neighbor indexing and querying for similar-county analysis.
 
+## How to run this application
+
+You need **two terminals**: one for the Vite frontend and one for the FastAPI backend (the backend powers county recommendations; the map and Insights UI can load without it, but recommendation panels will stay empty).
+
+1. **Prerequisites:** Node.js 18+, npm, Python 3.10+, a [Mapbox](https://www.mapbox.com/) access token.
+
+2. **Environment:** From the repository root, create a `.env` file (see [Environment Variables](#environment-variables)). At minimum set `MAPBOX_ACCESS_TOKEN` for the map and geocoding. For AI recommendations, set `NEWSAPI_API_KEY` (Event Registry) and `GEMINI_API_KEY`.
+
+3. **Frontend (terminal 1):**
+
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+   Vite prints a local URL (usually `http://localhost:5173`). Open it in your browser. The dev server proxies `/api/mapbox` and `/api/recommendations`, so use this URL—not a static file open of `index.html`.
+
+4. **Backend (terminal 2), from the repository root:**
+
+   ```bash
+   python3 -m pip install -r requirements.txt
+   uvicorn backend.api:app --reload --host 127.0.0.1 --port 8000
+   ```
+
+   The frontend expects the API at `http://127.0.0.1:8000` (configured in `frontend/vite.config.js`).
+
+5. **Production-style preview (optional):** After `npm run build` in `frontend/`, run `npm run preview` from `frontend/` so the same API proxies apply.
+
+For data regeneration, FAISS, and troubleshooting, see the sections below.
+
 ## Table of Contents
 
 - [Project Overview](#project-overview)
@@ -17,7 +48,7 @@ The repository includes:
 - [Repository Structure](#repository-structure)
 - [Prerequisites](#prerequisites)
 - [Environment Variables](#environment-variables)
-- [Quick Start](#quick-start)
+- [Running the application (step-by-step)](#running-the-application-step-by-step)
 - [Data Workflow](#data-workflow)
 - [Running FAISS Similarity Search](#running-faiss-similarity-search)
 - [Risk Scoring Method](#risk-scoring-method)
@@ -74,6 +105,7 @@ The frontend loads county data from `frontend/public/combined_final.csv` and com
 
 ```text
 yhack_2026/
+├─ requirements.txt
 ├─ backend/
 │  └─ api.py
 ├─ frontend/
@@ -101,7 +133,7 @@ yhack_2026/
 ## Prerequisites
 
 - Node.js 18+ and npm
-- Python 3.10+ (recommended)
+- Python 3.10+ (recommended). On macOS with Homebrew Python, create a venv first (for example `python3 -m venv .venv` then `source .venv/bin/activate`) before `pip install -r requirements.txt`.
 - A Mapbox access token
 
 ## Environment Variables
@@ -121,35 +153,36 @@ Notes:
 - County recommendation requests are proxied through `/api/recommendations` to the FastAPI backend.
 - If you change `.env`, restart the Vite dev server.
 
-## Quick Start
+## Running the application (step-by-step)
 
-1) Install frontend dependencies:
+This repeats the [How to run this application](#how-to-run-this-application) flow with extra detail.
 
-```bash
-cd frontend
-npm install
-```
+1. Install frontend dependencies:
 
-2) Start development server:
+   ```bash
+   cd frontend
+   npm install
+   ```
 
-```bash
-npm run dev
-```
+2. Start the Vite dev server:
 
-3) Install backend dependencies:
+   ```bash
+   npm run dev
+   ```
 
-```bash
-cd ..
-python3 -m pip install fastapi uvicorn requests eventregistry
-```
+3. Install Python packages for the API (from anywhere; use the same interpreter you run `uvicorn` with):
 
-4) Start the FastAPI backend (in a second terminal from repo root):
+   ```bash
+   python3 -m pip install -r requirements.txt
+   ```
 
-```bash
-uvicorn backend.api:app --reload --host 127.0.0.1 --port 8000
-```
+4. In a **second** terminal, from the **repository root** (parent of `frontend/`), start FastAPI:
 
-5) Open the local URL printed by Vite (typically `http://localhost:5173`).
+   ```bash
+   uvicorn backend.api:app --reload --host 127.0.0.1 --port 8000
+   ```
+
+5. Open the local URL printed by Vite (typically `http://localhost:5173`).
 
 County flow behavior:
 
@@ -161,12 +194,12 @@ County flow behavior:
 - When API returns, Gemini recommendations are displayed as bullet points for readability.
 - If generation fails/times out, the panel shows an empty-state message.
 
-6) Optional production build:
+6. **Optional production build** (from `frontend/`):
 
-```bash
-npm run build
-npm run preview
-```
+   ```bash
+   npm run build
+   npm run preview
+   ```
 
 ## Data Workflow
 
