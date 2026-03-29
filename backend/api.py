@@ -32,7 +32,7 @@ class ChatRequest(BaseModel):
 
 app = FastAPI(title="Climate Risk Advisor API")
 REPO_ROOT = Path(__file__).resolve().parent.parent
-SCRIPT_PATH = REPO_ROOT / "run_news_to_gemini.py"
+SCRIPT_PATH = Path(__file__).resolve().parent / "run_news_to_gemini.py"
 
 
 @app.post("/api/recommendations")
