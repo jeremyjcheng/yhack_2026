@@ -107,8 +107,8 @@ yhack_2026/
 ├── .gitignore
 ├── README.md
 ├── requirements.txt              # Python dependencies
-├── run_news_to_gemini.py         # News + Gemini recommendation pipeline
-├── gemini_prompt.py              # Gemini prompt templates for recommendations
+├── run_news_to_lava.py           # News + Lava recommendation pipeline
+├── lava_prompt.py                # Lava prompt templates for recommendations
 ├── output_news.py                # Event Registry news fetching
 ├── data_collection.ipynb         # Data collection and exploration notebook
 │
@@ -190,16 +190,17 @@ Create a `.env` file in the repository root:
 MAPBOX_ACCESS_TOKEN=your_mapbox_token_here
 NEWSAPI_API_KEY=your_eventregistry_api_key_here
 GEMINI_API_KEY=your_gemini_api_key_here
+LAVA_FORWARD_TOKEN=your_lava_forward_token_here
 ```
 
 | Variable | Required for | Description |
 |----------|-------------|-------------|
 | `MAPBOX_ACCESS_TOKEN` | Map, geocoding | Renders the county map and powers place/ZIP search |
 | `NEWSAPI_API_KEY` | Recommendations | Event Registry key for news-grounded county recommendations |
-| `GEMINI_API_KEY` | Recommendations, Chat | Google Gemini API key for AI generation and embeddings |
+| `GEMINI_API_KEY` | Chat | Google Gemini API key for AI generation and embeddings |
+| `LAVA_FORWARD_TOKEN` | Recommendations | Lava forward token for routing AI requests (GPT via proxy) |
 
 Notes:
-
 - `vite.config.js` reads `MAPBOX_ACCESS_TOKEN` from the repo root `.env` and injects it as `import.meta.env.VITE_MAPBOX_TOKEN`.
 - API routes are proxied through Vite: `/api/mapbox` to Mapbox, `/api/recommendations` and `/api/chat` to `http://127.0.0.1:8000`.
 - Restart `npm run dev` after editing `.env`.
@@ -378,7 +379,7 @@ Each hazard score is converted from a 0--100 scale to a 0--1 value. Overall risk
 ### County recommendations stay empty
 
 - Ensure FastAPI is running at `http://127.0.0.1:8000`.
-- Ensure `NEWSAPI_API_KEY` and `GEMINI_API_KEY` are present in `.env`.
+- Ensure `NEWSAPI_API_KEY` and `LAVA_FORWARD_TOKEN` are present in `.env`.
 - Verify frontend is started through Vite so `/api/recommendations` proxy is active.
 
 ### Chat returns "missing FEMA artifact" error

@@ -31,7 +31,7 @@ const TECH_STACK = [
   },
   {
     category: "ML",
-    items: ["Gemini API", "FAISS similarity search", "Risk-scoring pipeline"],
+    items: ["Gemini API", "Lava API", "FAISS similarity search", "Risk-scoring pipeline"],
   },
 ];
 

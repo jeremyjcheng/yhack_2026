@@ -4,7 +4,7 @@ import re
 import sys
 
 from output_news import fetch_news
-from gemini_prompt import build_news_prompt, generate_gemini
+from lava_prompt import build_news_prompt, generate_lava
 
 HAZARD_CHOICES = ("all", "heat", "flood", "wildfire")
 
@@ -98,7 +98,7 @@ def main() -> None:
         help="Hazard focus for generated recommendations.",
     )
     parser.add_argument("--prompt-template", help="Prompt template. Use {content} placeholder.")
-    parser.add_argument("--model", default="gemini-3-flash-preview")
+    parser.add_argument("--model", default="gemini-2.5-flash")
     parser.add_argument("--location", help="Location used for local news filtering")
     parser.add_argument("--sort-by", default="date")
     parser.add_argument("--max-items", type=int, default=20)
@@ -161,7 +161,7 @@ def main() -> None:
         for hazard in HAZARD_CHOICES:
             template = default_prompt_template(hazard)
             prompt_text = build_prompt_text(content, location_context, hazard, template)
-            response = generate_gemini(prompt_text, model=args.model)
+            response = generate_lava(prompt_text, model=args.model)
             recommendations[hazard] = extract_bullets(response)
             if args.debug:
                 print(
@@ -174,7 +174,7 @@ def main() -> None:
 
     template = args.prompt_template or default_prompt_template(args.hazard)
     prompt_text = build_prompt_text(content, location_context, args.hazard, template)
-    response = generate_gemini(prompt_text, model=args.model)
+    response = generate_lava(prompt_text, model=args.model)
     bullets = extract_bullets(response)
     if args.debug:
         print(
