@@ -1,9 +1,8 @@
-import argparse
-import json
 import os
 from pathlib import Path
+from typing import Any
 
-from newsapi import NewsApiClient
+from eventregistry import EventRegistry, QueryArticlesIter, QueryItems, ReturnInfo, ArticleInfoFlags
 
 
 def load_dotenv(path: str = ".env") -> None:
@@ -18,30 +17,47 @@ def load_dotenv(path: str = ".env") -> None:
         os.environ.setdefault(key.strip(), value.strip())
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--prompt", required=True, help="Search prompt")
-    parser.add_argument(
-        "--location",
-        default="Austin, TX, Texas, United States",
-        help="Unused for NewsAPI (kept for compatibility)",
-    )
-    args = parser.parse_args()
-
+def get_eventregistry_key() -> str:
     load_dotenv()
-    api_key_test = os.getenv("NEWSAPI_API_KEY")
-    if not api_key_test:
+    api_key = os.getenv("NEWSAPI_API_KEY")
+    if not api_key:
         raise SystemExit("Missing NEWSAPI_API_KEY in environment or .env")
+    return api_key
 
-    client = NewsApiClient(api_key=api_key_test)
-    results = client.get_everything(
-        q=args.prompt,
-        language="en",
-        sort_by="publishedAt",
-        page_size=50,
+
+def fetch_news(
+    prompt: str,
+    location: str = "Austin, Texas",
+    sort_by: str = "date",
+    max_items: int = 20,
+) -> dict[str, Any]:
+    er = EventRegistry(apiKey=get_eventregistry_key())
+    location_uri = er.getLocationUri(location) if location else None
+
+    query = QueryArticlesIter(
+        keywords=QueryItems.OR([prompt]),
+        sourceLocationUri=location_uri,
+        lang="eng",
     )
-    print(json.dumps(results, indent=2))
 
+    articles = []
+    for article in query.execQuery(
+        er,
+        sortBy=sort_by,
+        maxItems=max_items,
+        returnInfo=ReturnInfo(
+            articleInfo=ArticleInfoFlags(bodyLen=-1, title=True, body=True, url=True)
+        ),
+    ):
+        articles.append(
+            {
+                "title": article.get("title"),
+                "description": article.get("summary"),
+                "content": article.get("body"),
+                "url": article.get("url"),
+                "source": article.get("source", {}).get("title"),
+                "publishedAt": article.get("date"),
+            }
+        )
 
-if __name__ == "__main__":
-    main()
+    return {"status": "ok", "totalResults": len(articles), "articles": articles}

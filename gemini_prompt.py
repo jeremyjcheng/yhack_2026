@@ -1,7 +1,7 @@
-import argparse
 import os
 import sys
 from pathlib import Path
+import json
 
 import requests
 
@@ -21,28 +21,51 @@ def load_dotenv(path: str = ".env") -> None:
         os.environ.setdefault(key, value)
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--prompt", required=True, help="Prompt to send to Gemini")
-    parser.add_argument(
-        "--model",
-        default="gemini-3-flash-preview",
-        help="Gemini model name (e.g., gemini-1.5-flash, gemini-1.5-pro)",
-    )
-    args = parser.parse_args()
+def build_news_prompt(raw_text: str, prefix: str | None = None, max_chars: int = 120000) -> str:
+    text = raw_text.strip()
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        data = None
 
+    if isinstance(data, dict) and "articles" in data:
+        articles = data.get("articles", [])
+        parts = []
+        for article in articles:
+            title = article.get("title", "")
+            description = article.get("description", "")
+            content = article.get("content", "")
+            url = article.get("url", "")
+            parts.append(
+                f"Title: {title}\nDescription: {description}\nContent: {content}\nURL: {url}\n"
+            )
+        body = "\n".join(parts).strip()
+    else:
+        body = text
+
+    if prefix:
+        combined = f"{prefix}\n\n{body}"
+    else:
+        combined = body
+
+    if len(combined) > max_chars:
+        combined = combined[:max_chars] + "\n\n[Truncated]"
+    return combined
+
+
+def generate_gemini(prompt_text: str, model: str = "gemini-3-flash-preview") -> str:
     load_dotenv()
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         print("Missing GEMINI_API_KEY environment variable.", file=sys.stderr)
         sys.exit(1)
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{args.model}:generateContent"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
     payload = {
         "contents": [
             {
                 "role": "user",
-                "parts": [{"text": args.prompt}],
+                "parts": [{"text": prompt_text}],
             }
         ]
     }
@@ -56,13 +79,7 @@ def main() -> None:
 
     candidates = data.get("candidates", [])
     if not candidates:
-        print("No response returned.")
-        return
+        return ""
 
     text_parts = candidates[0].get("content", {}).get("parts", [])
-    response_text = "".join(part.get("text", "") for part in text_parts)
-    print(response_text)
-
-
-if __name__ == "__main__":
-    main()
+    return "".join(part.get("text", "") for part in text_parts)
