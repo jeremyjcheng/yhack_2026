@@ -114,7 +114,10 @@ yhack_2026/
 │
 ├── backend/
 │   ├── api.py                    # FastAPI app: /api/recommendations, /api/chat
-│   └── fema_pdf_rag.py           # FEMA PDF + county data RAG pipeline
+│   ├── fema_pdf_rag.py           # FEMA PDF + county data RAG pipeline
+│   ├── gemini_prompt.py          # Gemini prompt templates for recommendations
+│   ├── output_news.py            # Event Registry news fetching
+│   └── run_news_to_gemini.py     # News + Gemini recommendation pipeline
 │
 ├── frontend/
 │   ├── index.html
