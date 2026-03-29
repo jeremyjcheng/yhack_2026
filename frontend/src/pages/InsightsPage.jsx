@@ -2,16 +2,17 @@ import { Link } from 'react-router-dom';
 
 export default function InsightsPage() {
   return (
-    <main className="static-page">
-      <h1 className="static-page-title">Insights</h1>
-      <p className="static-page-lead">
+    <main className="h-[calc(100vh-56px)] overflow-auto px-4 py-8 sm:px-6 sm:py-10">
+      <article className="prose prose-slate mx-auto max-w-3xl">
+        <h1 className="!mb-3">Insights</h1>
+        <p className="lead !mb-8 !text-app-muted">
         Use the map to explore how climate-related risks vary across U.S. counties and to compare
         places side by side.
-      </p>
+        </p>
 
-      <section className="static-section">
+        <section>
         <h2>Reading the map</h2>
-        <ul className="static-list">
+        <ul>
           <li>
             <strong>Layer selector</strong> switches the choropleth between heat, flood, wildfire,
             and an overall combined view.
@@ -25,20 +26,21 @@ export default function InsightsPage() {
             panning manually.
           </li>
         </ul>
-      </section>
+        </section>
 
-      <section className="static-section">
+        <section>
         <h2>Scores</h2>
         <p>
           County scores are derived from the indicators in the bundled dataset, normalized so you
           can compare counties on a consistent scale. They are meant for planning and awareness,
           not for insurance or legal decisions.
         </p>
-      </section>
+        </section>
 
-      <p className="static-back">
-        <Link to="/">Back to map</Link>
-      </p>
+        <p className="mt-8 border-t border-app-border pt-4">
+          <Link to="/" className="font-medium no-underline hover:underline">Back to map</Link>
+        </p>
+      </article>
     </main>
   );
 }

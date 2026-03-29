@@ -1,6 +1,7 @@
-import styles from './MapLegend.module.css';
+import { useState } from 'react';
 
 export default function MapLegend({ activeLayer, onLayerChange }) {
+  const [expanded, setExpanded] = useState(false);
   const layers = [
     { key: 'all', label: 'All Risks', dots: true },
     { key: 'heat', label: 'Heat Risk', color: '#ef4444', icon: 'heat' },
@@ -9,20 +10,43 @@ export default function MapLegend({ activeLayer, onLayerChange }) {
   ];
 
   return (
-    <div className={styles.legend}>
-      <h4 className={styles.title}>Risk Layers</h4>
-      <div className={styles.toggles}>
+    <div className="pointer-events-none absolute bottom-4 left-2 z-20 sm:left-4 sm:bottom-10">
+      <button
+        type="button"
+        className="pointer-events-auto mb-2 inline-flex items-center gap-2 rounded-lg border border-app-border bg-app-surface px-3 py-2 text-xs font-semibold uppercase tracking-wide text-app-muted shadow-md lg:hidden"
+        onClick={() => setExpanded((value) => !value)}
+        aria-expanded={expanded}
+      >
+        Risk layers
+        <span className="text-app-text">{expanded ? 'Hide' : 'Show'}</span>
+      </button>
+      <div
+        className={[
+          'pointer-events-auto min-w-44 rounded-[14px] border border-app-border bg-app-surface p-3.5 shadow-lg',
+          expanded ? 'block' : 'hidden',
+          'lg:block',
+        ].join(' ')}
+      >
+        <h4 className="mb-2.5 text-xs font-semibold tracking-wide text-app-muted uppercase">Risk Layers</h4>
+        <div className="mb-3.5 flex flex-col gap-0.5">
         {layers.map(l => (
           <button
             key={l.key}
-            className={`${styles.btn} ${activeLayer === l.key ? styles.active : ''}`}
+            type="button"
+            className={[
+              'flex items-center gap-2 rounded-md px-2.5 py-2 text-left text-[13px] font-medium transition-colors',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary',
+              activeLayer === l.key
+                ? 'bg-app-primary-light text-app-primary'
+                : 'text-app-text hover:bg-app-bg',
+            ].join(' ')}
             onClick={() => onLayerChange(l.key)}
           >
             {l.dots ? (
               <>
-                <span className={`${styles.dot} ${styles.dotHeat}`} />
-                <span className={`${styles.dot} ${styles.dotFlood}`} />
-                <span className={`${styles.dot} ${styles.dotFire}`} />
+                <span className="h-2 w-2 rounded-full bg-risk-heat" />
+                <span className="h-2 w-2 rounded-full bg-risk-flood" />
+                <span className="h-2 w-2 rounded-full bg-risk-fire" />
               </>
             ) : (
               <LayerIcon type={l.icon} color={l.color} />
@@ -30,13 +54,14 @@ export default function MapLegend({ activeLayer, onLayerChange }) {
             {l.label}
           </button>
         ))}
-      </div>
-      <div className={styles.scale}>
-        <span className={styles.label}>Risk Level</span>
-        <div className={styles.gradient} />
-        <div className={styles.range}>
-          <span>Low</span>
-          <span>High</span>
+        </div>
+        <div className="border-t border-app-border pt-3">
+          <span className="mb-1.5 block text-xs font-medium text-app-muted">Risk Level</span>
+          <div className="h-2.5 rounded-full bg-gradient-to-r from-risk-low via-yellow-500 to-risk-heat" />
+          <div className="mt-1 flex items-center justify-between text-[11px] text-app-muted">
+            <span>Low</span>
+            <span>High</span>
+          </div>
         </div>
       </div>
     </div>

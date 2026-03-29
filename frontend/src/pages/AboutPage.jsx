@@ -2,14 +2,15 @@ import { Link } from 'react-router-dom';
 
 export default function AboutPage() {
   return (
-    <main className="static-page">
-      <h1 className="static-page-title">About</h1>
-      <p className="static-page-lead">
+    <main className="h-[calc(100vh-56px)] overflow-auto px-4 py-8 sm:px-6 sm:py-10">
+      <article className="prose prose-slate mx-auto max-w-3xl">
+        <h1 className="!mb-3">About</h1>
+        <p className="lead !mb-8 !text-app-muted">
         Climate Risk Advisor is an interactive viewer for county-level climate risk signals across
         the United States.
-      </p>
+        </p>
 
-      <section className="static-section">
+        <section>
         <h2>Data</h2>
         <p>
           County boundaries come from{' '}
@@ -19,9 +20,9 @@ export default function AboutPage() {
           (via jsDelivr). Risk-related fields are joined from this project&apos;s{' '}
           <code>county-data.json</code> build output.
         </p>
-      </section>
+        </section>
 
-      <section className="static-section">
+        <section>
         <h2>Map</h2>
         <p>
           Basemaps and geocoding use{' '}
@@ -31,19 +32,20 @@ export default function AboutPage() {
           . A valid access token is required in <code>.env</code> as{' '}
           <code>MAPBOX_ACCESS_TOKEN</code>.
         </p>
-      </section>
+        </section>
 
-      <section className="static-section">
+        <section>
         <h2>Disclaimer</h2>
         <p>
           This tool is for educational and exploratory use. It does not replace professional hazard
           assessments, building codes, or official emergency guidance.
         </p>
-      </section>
+        </section>
 
-      <p className="static-back">
-        <Link to="/">Back to map</Link>
-      </p>
+        <p className="mt-8 border-t border-app-border pt-4">
+          <Link to="/" className="font-medium no-underline hover:underline">Back to map</Link>
+        </p>
+      </article>
     </main>
   );
 }

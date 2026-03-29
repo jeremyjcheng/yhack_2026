@@ -25,6 +25,7 @@ export default function MapPage() {
 
   const handleSelectCounty = useCallback((fips) => {
     setSelectedFips(fips);
+    setHoverInfo(null);
     const d = countyDataMap[fips];
     if (d) {
       mapRef.current?.flyTo({ center: [d.lon, d.lat], zoom: 7, duration: 1000 });
@@ -40,8 +41,9 @@ export default function MapPage() {
   }, []);
 
   const handleHover = useCallback((info) => {
+    if (selectedFips) return;
     setHoverInfo(info);
-  }, []);
+  }, [selectedFips]);
 
   const handleHoverEnd = useCallback(() => {
     setHoverInfo(null);
@@ -49,7 +51,7 @@ export default function MapPage() {
 
   return (
     <>
-      <div className="main-content">
+      <div className="relative h-[calc(100vh-56px)]">
         <SearchBar
           allCounties={allCounties}
           onSelectCounty={handleSelectCounty}
@@ -75,7 +77,7 @@ export default function MapPage() {
           onClose={handleDeselectCounty}
           onSelectCounty={handleSelectCounty}
         />
-        <HoverTooltip hoverInfo={hoverInfo} />
+        <HoverTooltip hoverInfo={selectedFips ? null : hoverInfo} />
       </div>
       <LoadingOverlay visible={loading} />
     </>

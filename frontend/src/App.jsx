@@ -3,7 +3,6 @@ import Layout from './components/Layout';
 import MapPage from './pages/MapPage';
 import InsightsPage from './pages/InsightsPage';
 import AboutPage from './pages/AboutPage';
-import './App.css';
 
 export default function App() {
   return (
