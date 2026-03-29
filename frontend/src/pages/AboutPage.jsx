@@ -17,8 +17,9 @@ export default function AboutPage() {
           <a href="https://github.com/topojson/us-atlas" target="_blank" rel="noreferrer">
             us-atlas
           </a>{' '}
-          (via jsDelivr). Risk-related fields are joined from this project&apos;s{' '}
-          <code>county-data.json</code> build output.
+          (via jsDelivr). Risk-related fields are loaded from{' '}
+          <code>combined_final.csv</code>, including county climate summaries and
+          hazard index values.
         </p>
         </section>
 

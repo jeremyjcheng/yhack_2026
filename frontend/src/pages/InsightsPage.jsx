@@ -453,12 +453,13 @@ export default function InsightsPage() {
               How scores are computed
             </summary>
             <p className="mt-3 text-sm leading-6 text-app-muted">
-              Scores are built from county-level temperature, UV, rainfall,
-              precipitation-hours, and snowfall indicators. Inputs are
-              normalized to a consistent 0-1 range and then combined into heat,
-              flood, and wildfire dimensions using fixed weights. The overall
-              score is the average of those three dimensions. This page is for
-              planning and awareness, not insurance or regulatory decisions.
+              Scores are derived from county hazard-index columns in{' '}
+              <code>combined_final.csv</code>. Heat uses the Heat Wave index;
+              Flood combines Inland Flooding, Coastal Flooding, and Hurricane;
+              Wildfire combines Wildfire and Drought. Values are converted to a
+              0-1 scale from their 0-100 index scores, and overall risk is the
+              average of heat, flood, and wildfire. This page is for planning
+              and awareness, not insurance or regulatory decisions.
             </p>
           </details>
         </section>

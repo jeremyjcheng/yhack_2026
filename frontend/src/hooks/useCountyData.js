@@ -1,8 +1,36 @@
 import { useState, useEffect, useRef } from 'react';
 import { feature } from 'topojson-client';
+import Papa from 'papaparse';
 import { computeRiskBounds, computeRiskScores } from '../utils/riskScoring';
 
 const COUNTY_TOPO_URL = 'https://cdn.jsdelivr.net/npm/us-atlas@3/counties-10m.json';
+const COUNTY_DATA_URL = '/combined_final.csv';
+
+function toNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function normalizeCountyRow(row) {
+  const rawFips = row.fips_code || row['State-County FIPS Code'] || '';
+  const fips = String(rawFips).padStart(5, '0');
+  if (!/^\d{5}$/.test(fips)) return null;
+
+  return {
+    ...row,
+    fips,
+    fips_code: fips,
+    name: row.name,
+    state: row.state,
+    lon: toNumber(row.lon),
+    lat: toNumber(row.lat),
+    avg_temp_max: toNumber(row.avg_temp_max),
+    avg_temp_min: toNumber(row.avg_temp_min),
+    total_rain: toNumber(row.total_rain),
+    max_uv_index: toNumber(row.max_uv_index),
+    total_snowfall: toNumber(row.total_snowfall),
+  };
+}
 
 export default function useCountyData() {
   const [loading, setLoading] = useState(true);
@@ -16,11 +44,18 @@ export default function useCountyData() {
     async function load() {
       const [topoRes, dataRes] = await Promise.all([
         fetch(COUNTY_TOPO_URL),
-        fetch('/county-data.json'),
+        fetch(COUNTY_DATA_URL),
       ]);
 
       const topoData = await topoRes.json();
-      const rawCounties = await dataRes.json();
+      const csvText = await dataRes.text();
+      const parsed = Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+      });
+      const rawCounties = parsed.data
+        .map(normalizeCountyRow)
+        .filter(Boolean);
 
       const map = {};
       rawCounties.forEach(c => { map[c.fips] = c; });
@@ -50,7 +85,7 @@ export default function useCountyData() {
       });
 
       // us-atlas includes all counties (incl. territories). Only render counties present in
-      // county-data.json — otherwise removed areas (e.g. Puerto Rico) would still draw as shapes.
+      // combined_final.csv — otherwise removed areas would still draw as shapes.
       geo.features = geo.features.filter(f => map[f.properties.fips] != null);
 
       if (!cancelled) {

@@ -1,30 +1,39 @@
-let riskBounds = {};
-
-export function computeRiskBounds(counties) {
-  const fields = ['avg_temp_max', 'max_uv_index', 'total_rain', 'total_precip_hours', 'total_snowfall'];
-  fields.forEach(f => {
-    const vals = counties.map(c => c[f]).filter(v => v != null);
-    riskBounds[f] = { min: Math.min(...vals), max: Math.max(...vals) };
-  });
+export function computeRiskBounds() {
+  // Kept for compatibility; hazard-index based scoring does not need dynamic bounds.
 }
 
-function normalize(value, field) {
-  const b = riskBounds[field];
-  if (!b || b.max === b.min) return 0;
-  return Math.max(0, Math.min(1, (value - b.min) / (b.max - b.min)));
+function hazardToUnit(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return null;
+  return Math.max(0, Math.min(1, n / 100));
+}
+
+function weightedAverage(entries) {
+  const valid = entries.filter((entry) => entry.value != null && entry.weight > 0);
+  if (valid.length === 0) return 0;
+  const weighted = valid.reduce((sum, entry) => sum + entry.value * entry.weight, 0);
+  const totalWeight = valid.reduce((sum, entry) => sum + entry.weight, 0);
+  return totalWeight > 0 ? weighted / totalWeight : 0;
 }
 
 export function computeRiskScores(c) {
-  const heat = 0.6 * normalize(c.avg_temp_max, 'avg_temp_max') +
-               0.4 * normalize(c.max_uv_index, 'max_uv_index');
+  const heatWave = hazardToUnit(c['Heat Wave - Hazard Type Risk Index Score']);
+  const inlandFlood = hazardToUnit(c['Inland Flooding - Hazard Type Risk Index Score']);
+  const coastalFlood = hazardToUnit(c['Coastal Flooding - Hazard Type Risk Index Score']);
+  const hurricane = hazardToUnit(c['Hurricane - Hazard Type Risk Index Score']);
+  const wildfireHazard = hazardToUnit(c['Wildfire - Hazard Type Risk Index Score']);
+  const drought = hazardToUnit(c['Drought - Hazard Type Risk Index Score']);
 
-  const flood = 0.5 * normalize(c.total_rain, 'total_rain') +
-                0.5 * normalize(c.total_precip_hours, 'total_precip_hours');
-
-  const droughtFactor = 1 - normalize(c.total_rain, 'total_rain');
-  const wildfire = 0.5 * normalize(c.avg_temp_max, 'avg_temp_max') +
-                   0.3 * droughtFactor +
-                   0.2 * (1 - normalize(c.total_snowfall, 'total_snowfall'));
+  const heat = heatWave ?? 0;
+  const flood = weightedAverage([
+    { value: inlandFlood, weight: 0.6 },
+    { value: coastalFlood, weight: 0.2 },
+    { value: hurricane, weight: 0.2 },
+  ]);
+  const wildfire = weightedAverage([
+    { value: wildfireHazard, weight: 0.8 },
+    { value: drought, weight: 0.2 },
+  ]);
 
   const overall = (heat + flood + wildfire) / 3;
 
