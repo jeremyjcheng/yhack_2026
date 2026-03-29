@@ -18,7 +18,8 @@ def load_dotenv(path: str = ".env") -> None:
         key, value = line.split("=", 1)
         key = key.strip()
         value = value.strip().strip('"').strip("'")
-        os.environ.setdefault(key, value)
+        # Ensure repo .env values are used even if shell has stale exports.
+        os.environ[key] = value
 
 
 def build_news_prompt(raw_text: str, prefix: str | None = None, max_chars: int = 120000) -> str:

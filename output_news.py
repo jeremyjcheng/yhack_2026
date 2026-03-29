@@ -14,7 +14,10 @@ def load_dotenv(path: str = ".env") -> None:
         if not line or line.startswith("#") or "=" not in line:
             continue
         key, value = line.split("=", 1)
-        os.environ.setdefault(key.strip(), value.strip())
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        # Ensure repo .env values are used even if shell has stale exports.
+        os.environ[key] = value
 
 
 def get_eventregistry_key() -> str:
