@@ -115,8 +115,16 @@ yhack_2026/
 │   ├── api.py                    # FastAPI app: /api/recommendations, /api/chat
 │   ├── fema_pdf_rag.py           # FEMA PDF + county data RAG pipeline
 │   ├── lava_prompt.py            # Lava prompt builder and OpenAI-via-Lava caller
+│   ├── run_news_to_lava.py       # News + Lava (GPT-4o-mini) recommendation pipeline (active)
 │   ├── output_news.py            # Event Registry news fetching
-│   └── run_news_to_lava.py       # News + Lava (GPT-4o-mini) recommendation pipeline
+│   ├── gemini_prompt.py          # Gemini prompt templates (legacy, unused by default)
+│   └── run_news_to_gemini.py     # News + Gemini recommendation pipeline (legacy)
+│
+├── images/                       # Source screenshots used by the welcome carousel
+│   ├── about.png
+│   ├── insight.png
+│   ├── map.png
+│   └── yale_dog.png
 │
 ├── frontend/
 │   ├── index.html
@@ -124,11 +132,15 @@ yhack_2026/
 │   ├── vite.config.js            # Dev server config with API proxies
 │   ├── public/
 │   │   ├── combined_final.csv    # County data consumed by the frontend
-│   │   └── county-data.json
+│   │   ├── county-data.json
+│   │   ├── about.png             # Welcome carousel images (copied from images/)
+│   │   ├── insight.png
+│   │   ├── map.png
+│   │   └── yale_dog.png          # Mascot / logo asset
 │   └── src/
 │       ├── main.jsx              # App entry point
 │       ├── App.jsx               # React Router setup (/, /map, /insights, /about)
-│       ├── index.css             # Global styles
+│       ├── index.css             # Global styles and carousel animations
 │       ├── components/
 │       │   ├── GlobalChatWidget.jsx    # Floating climate risk chatbot
 │       │   ├── HoverTooltip.jsx       # Map hover county tooltip
@@ -137,7 +149,7 @@ yhack_2026/
 │       │   ├── MapLegend.jsx          # Risk layer toggle legend
 │       │   ├── MapView.jsx            # Mapbox GL county map
 │       │   ├── Navbar.jsx             # Top navigation bar
-│       │   ├── WelcomeCarousel.jsx   # Auto-advancing image carousel
+│       │   ├── WelcomeCarousel.jsx    # Auto-advancing image carousel
 │       │   ├── Recommendations.jsx    # AI hazard recommendations panel
 │       │   ├── RiskBars.jsx           # Animated risk score bars
 │       │   ├── SearchBar.jsx          # County/place search input
@@ -177,7 +189,8 @@ yhack_2026/
     ├── build_faiss_index.py      # Build county-feature FAISS index
     ├── build_fema_pdf_index.py   # Chunk/embed FEMA PDF into FAISS index
     ├── merge_risk_data.py        # Merge risk.csv into final_df.csv
-    └── query_faiss_neighbors.py  # Query nearest counties by FIPS
+    ├── query_faiss_neighbors.py  # Query nearest counties by FIPS
+    └── remap_ct_old_fips.py      # Remap legacy Connecticut FIPS codes
 ```
 
 ## Prerequisites
