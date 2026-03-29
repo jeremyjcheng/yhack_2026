@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Bar,
   BarChart,
@@ -8,30 +8,30 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from 'recharts';
-import useCountyData from '../hooks/useCountyData';
+} from "recharts";
+import useCountyData from "../hooks/useCountyData";
 import {
   buildHistogram,
   summarizeByState,
   summarizeScores,
   topN,
-} from '../utils/insightsStats';
+} from "../utils/insightsStats";
 
 const SCORE_KEY_BY_DIMENSION = {
-  overall: 'overallRisk',
-  heat: 'heatRisk',
-  flood: 'floodRisk',
-  wildfire: 'wildfireRisk',
+  overall: "overallRisk",
+  heat: "heatRisk",
+  flood: "floodRisk",
+  wildfire: "wildfireRisk",
 };
 
 const DIMENSIONS = [
-  { id: 'overall', label: 'Overall' },
-  { id: 'heat', label: 'Heat' },
-  { id: 'flood', label: 'Flood' },
-  { id: 'wildfire', label: 'Wildfire' },
+  { id: "overall", label: "Overall" },
+  { id: "heat", label: "Heat" },
+  { id: "flood", label: "Flood" },
+  { id: "wildfire", label: "Wildfire" },
 ];
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 10;
 
 function formatScore(value) {
   return `${Math.round((value || 0) * 100)}%`;
@@ -43,25 +43,25 @@ function toCountyLabel(county) {
 
 export default function InsightsPage() {
   const { loading, allCounties } = useCountyData();
-  const [selectedState, setSelectedState] = useState('All States');
-  const [dimension, setDimension] = useState('overall');
-  const [sortKey, setSortKey] = useState('overallRisk');
-  const [sortDirection, setSortDirection] = useState('desc');
+  const [selectedState, setSelectedState] = useState("All States");
+  const [dimension, setDimension] = useState("overall");
+  const [sortKey, setSortKey] = useState("overallRisk");
+  const [sortDirection, setSortDirection] = useState("desc");
   const [currentPage, setCurrentPage] = useState(1);
-  const [compareAInput, setCompareAInput] = useState('');
-  const [compareBInput, setCompareBInput] = useState('');
-  const [compareAFips, setCompareAFips] = useState('');
-  const [compareBFips, setCompareBFips] = useState('');
+  const [compareAInput, setCompareAInput] = useState("");
+  const [compareBInput, setCompareBInput] = useState("");
+  const [compareAFips, setCompareAFips] = useState("");
+  const [compareBFips, setCompareBFips] = useState("");
 
   const stateOptions = useMemo(() => {
     const states = new Set(allCounties.map((county) => county.state));
-    return ['All States', ...Array.from(states).sort()];
+    return ["All States", ...Array.from(states).sort()];
   }, [allCounties]);
 
   const scoreKey = SCORE_KEY_BY_DIMENSION[dimension];
 
   const filteredCounties = useMemo(() => {
-    if (selectedState === 'All States') return allCounties;
+    if (selectedState === "All States") return allCounties;
     return allCounties.filter((county) => county.state === selectedState);
   }, [allCounties, selectedState]);
 
@@ -92,8 +92,8 @@ export default function InsightsPage() {
     counties.sort((a, b) => {
       const left = a[sortKey];
       const right = b[sortKey];
-      const multiplier = sortDirection === 'asc' ? 1 : -1;
-      if (typeof left === 'number' && typeof right === 'number') {
+      const multiplier = sortDirection === "asc" ? 1 : -1;
+      if (typeof left === "number" && typeof right === "number") {
         return multiplier * (left - right);
       }
       return multiplier * String(left).localeCompare(String(right));
@@ -122,11 +122,11 @@ export default function InsightsPage() {
 
   const handleSort = (column) => {
     if (sortKey === column) {
-      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
       return;
     }
     setSortKey(column);
-    setSortDirection('desc');
+    setSortDirection("desc");
   };
 
   if (loading) {
@@ -150,28 +150,42 @@ export default function InsightsPage() {
         <section className="rounded-xl bg-app-surface p-5 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-app-text">Insights</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-app-text">
+                Insights
+              </h1>
               <p className="mt-1 text-sm text-app-muted">
                 Data-driven view of county climate risk patterns and outliers.
               </p>
             </div>
-            <Link to="/" className="text-sm font-medium text-app-primary hover:underline">
+            <Link
+              to="/"
+              className="text-sm font-medium text-app-primary hover:underline"
+            >
               Back to map
             </Link>
           </div>
         </section>
 
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <KpiCard label="Counties in view" value={summary.count.toLocaleString()} />
+          <KpiCard
+            label="Counties in view"
+            value={summary.count.toLocaleString()}
+          />
           <KpiCard label="Median risk" value={formatScore(summary.median)} />
           <KpiCard label="Average risk" value={formatScore(summary.mean)} />
-          <KpiCard label="Counties >= 50%" value={`${summary.aboveHalfPct.toFixed(1)}%`} />
+          <KpiCard
+            label="Counties >= 50%"
+            value={`${summary.aboveHalfPct.toFixed(1)}%`}
+          />
         </section>
 
         <section className="rounded-xl bg-app-surface p-5 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <label htmlFor="state-filter" className="text-sm font-medium text-app-muted">
+              <label
+                htmlFor="state-filter"
+                className="text-sm font-medium text-app-muted"
+              >
                 State
               </label>
               <select
@@ -193,11 +207,11 @@ export default function InsightsPage() {
                   key={item.id}
                   type="button"
                   className={[
-                    'rounded-md px-3 py-1.5 text-sm font-medium transition',
+                    "rounded-md px-3 py-1.5 text-sm font-medium transition",
                     item.id === dimension
-                      ? 'bg-app-primary text-white'
-                      : 'text-app-text hover:bg-white',
-                  ].join(' ')}
+                      ? "bg-app-primary text-white"
+                      : "text-app-text hover:bg-white",
+                  ].join(" ")}
                   onClick={() => {
                     setDimension(item.id);
                     setSortKey(SCORE_KEY_BY_DIMENSION[item.id]);
@@ -234,7 +248,7 @@ export default function InsightsPage() {
           </ChartCard>
         </section>
 
-        {selectedState === 'All States' ? (
+        {selectedState === "All States" ? (
           <ChartCard
             title={`Average ${dimension} risk by state (top 15)`}
             ariaLabel={`Bar chart of top states by average ${dimension} risk`}
@@ -242,7 +256,14 @@ export default function InsightsPage() {
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={stateSummary}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="state" tick={{ fontSize: 11 }} interval={0} angle={-35} textAnchor="end" height={80} />
+                <XAxis
+                  dataKey="state"
+                  tick={{ fontSize: 11 }}
+                  interval={0}
+                  angle={-35}
+                  textAnchor="end"
+                  height={80}
+                />
                 <YAxis tickFormatter={formatScore} domain={[0, 1]} />
                 <Tooltip formatter={(value) => formatScore(value)} />
                 <Bar dataKey="avgRisk" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
@@ -252,16 +273,26 @@ export default function InsightsPage() {
         ) : null}
 
         <section className="grid gap-4 lg:grid-cols-2">
-          <RankedList title={`Top 5 ${dimension} risk counties`} counties={topCounties} scoreKey={scoreKey} />
-          <RankedList title={`Lowest 5 ${dimension} risk counties`} counties={bottomCounties} scoreKey={scoreKey} />
+          <RankedList
+            title={`Top 5 ${dimension} risk counties`}
+            counties={topCounties}
+            scoreKey={scoreKey}
+          />
+          <RankedList
+            title={`Lowest 5 ${dimension} risk counties`}
+            counties={bottomCounties}
+            scoreKey={scoreKey}
+          />
         </section>
 
         <section className="rounded-xl bg-app-surface p-5 shadow-sm">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-lg font-semibold text-app-text">County table</h2>
+            <h2 className="text-lg font-semibold text-app-text">
+              County table
+            </h2>
             <span className="text-xs text-app-muted">
               {sortedCounties.length === 0
-                ? 'No rows'
+                ? "No rows"
                 : `Showing ${(safePage - 1) * PAGE_SIZE + 1}–${Math.min(safePage * PAGE_SIZE, sortedCounties.length)} of ${sortedCounties.length.toLocaleString()} · ${PAGE_SIZE} per page`}
             </span>
           </div>
@@ -269,26 +300,78 @@ export default function InsightsPage() {
             <table className="min-w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-app-border text-left">
-                  <SortableHeader label="County" column="name" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} />
-                  <SortableHeader label="State" column="state" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} />
-                  <SortableHeader label="Heat" column="heatRisk" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} />
-                  <SortableHeader label="Flood" column="floodRisk" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} />
-                  <SortableHeader label="Wildfire" column="wildfireRisk" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} />
-                  <SortableHeader label="Overall" column="overallRisk" sortKey={sortKey} sortDirection={sortDirection} onSort={handleSort} />
+                  <SortableHeader
+                    label="County"
+                    column="name"
+                    sortKey={sortKey}
+                    sortDirection={sortDirection}
+                    onSort={handleSort}
+                  />
+                  <SortableHeader
+                    label="State"
+                    column="state"
+                    sortKey={sortKey}
+                    sortDirection={sortDirection}
+                    onSort={handleSort}
+                  />
+                  <SortableHeader
+                    label="Heat"
+                    column="heatRisk"
+                    sortKey={sortKey}
+                    sortDirection={sortDirection}
+                    onSort={handleSort}
+                  />
+                  <SortableHeader
+                    label="Flood"
+                    column="floodRisk"
+                    sortKey={sortKey}
+                    sortDirection={sortDirection}
+                    onSort={handleSort}
+                  />
+                  <SortableHeader
+                    label="Wildfire"
+                    column="wildfireRisk"
+                    sortKey={sortKey}
+                    sortDirection={sortDirection}
+                    onSort={handleSort}
+                  />
+                  <SortableHeader
+                    label="Overall"
+                    column="overallRisk"
+                    sortKey={sortKey}
+                    sortDirection={sortDirection}
+                    onSort={handleSort}
+                  />
                   <th className="px-3 py-2">Map</th>
                 </tr>
               </thead>
               <tbody>
                 {pagedCounties.map((county) => (
-                  <tr key={county.fips} className="border-b border-app-border/70 hover:bg-app-bg">
-                    <td className="px-3 py-2 font-medium text-app-text">{county.name} County</td>
+                  <tr
+                    key={county.fips}
+                    className="border-b border-app-border/70 hover:bg-app-bg"
+                  >
+                    <td className="px-3 py-2 font-medium text-app-text">
+                      {county.name} County
+                    </td>
                     <td className="px-3 py-2 text-app-muted">{county.state}</td>
-                    <td className="px-3 py-2">{formatScore(county.heatRisk)}</td>
-                    <td className="px-3 py-2">{formatScore(county.floodRisk)}</td>
-                    <td className="px-3 py-2">{formatScore(county.wildfireRisk)}</td>
-                    <td className="px-3 py-2">{formatScore(county.overallRisk)}</td>
                     <td className="px-3 py-2">
-                      <Link to={`/?fips=${county.fips}`} className="font-medium text-app-primary hover:underline">
+                      {formatScore(county.heatRisk)}
+                    </td>
+                    <td className="px-3 py-2">
+                      {formatScore(county.floodRisk)}
+                    </td>
+                    <td className="px-3 py-2">
+                      {formatScore(county.wildfireRisk)}
+                    </td>
+                    <td className="px-3 py-2">
+                      {formatScore(county.overallRisk)}
+                    </td>
+                    <td className="px-3 py-2">
+                      <Link
+                        to={`/?fips=${county.fips}`}
+                        className="font-medium text-app-primary hover:underline"
+                      >
                         View
                       </Link>
                     </td>
@@ -312,7 +395,9 @@ export default function InsightsPage() {
             <button
               type="button"
               className="rounded-md border border-app-border px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
-              onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+              onClick={() =>
+                setCurrentPage((page) => Math.min(totalPages, page + 1))
+              }
               disabled={safePage >= totalPages}
             >
               Next
@@ -321,9 +406,12 @@ export default function InsightsPage() {
         </section>
 
         <section className="rounded-xl bg-app-surface p-5 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-app-text">Compare counties</h2>
+          <h2 className="mb-4 text-lg font-semibold text-app-text">
+            Compare counties
+          </h2>
           <p className="mb-3 text-sm text-app-muted">
-            Start typing to search counties. Suggestions appear only after you enter text.
+            Start typing to search counties. Suggestions appear only after you
+            enter text.
           </p>
           <div className="grid gap-3 md:grid-cols-2">
             <CompareCountyInput
@@ -365,11 +453,12 @@ export default function InsightsPage() {
               How scores are computed
             </summary>
             <p className="mt-3 text-sm leading-6 text-app-muted">
-              Scores are built from county-level temperature, UV, rainfall, precipitation-hours, and
-              snowfall indicators. Inputs are normalized to a consistent 0-1 range and then combined
-              into heat, flood, and wildfire dimensions using fixed weights. The overall score is the
-              average of those three dimensions. This page is for planning and awareness, not
-              insurance or regulatory decisions.
+              Scores are built from county-level temperature, UV, rainfall,
+              precipitation-hours, and snowfall indicators. Inputs are
+              normalized to a consistent 0-1 range and then combined into heat,
+              flood, and wildfire dimensions using fixed weights. The overall
+              score is the average of those three dimensions. This page is for
+              planning and awareness, not insurance or regulatory decisions.
             </p>
           </details>
         </section>
@@ -385,7 +474,8 @@ function filterCountiesForCompare(counties, query) {
   if (q.length < 1) return [];
   return counties
     .filter((county) => {
-      const blob = `${county.name} ${county.state} ${county.fips}`.toLowerCase();
+      const blob =
+        `${county.name} ${county.state} ${county.fips}`.toLowerCase();
       return blob.includes(q);
     })
     .slice(0, MAX_COMPARE_SUGGESTIONS);
@@ -408,13 +498,16 @@ function CompareCountyInput({ id, label, counties, inputValue, onChange }) {
         setOpen(false);
       }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, []);
 
   return (
     <div ref={wrapperRef} className="relative">
-      <label htmlFor={id} className="mb-1 block text-xs font-medium text-app-muted">
+      <label
+        htmlFor={id}
+        className="mb-1 block text-xs font-medium text-app-muted"
+      >
         {label}
       </label>
       <input
@@ -425,14 +518,14 @@ function CompareCountyInput({ id, label, counties, inputValue, onChange }) {
         placeholder="Type to search counties"
         className="w-full rounded-md border border-app-border px-3 py-2 text-sm"
         onChange={(event) => {
-          onChange({ input: event.target.value, fips: '' });
+          onChange({ input: event.target.value, fips: "" });
           setOpen(true);
         }}
         onFocus={() => {
           if (inputValue.trim().length >= 1) setOpen(true);
         }}
         onKeyDown={(event) => {
-          if (event.key === 'Escape') setOpen(false);
+          if (event.key === "Escape") setOpen(false);
         }}
       />
       {showSuggestions ? (
@@ -442,7 +535,9 @@ function CompareCountyInput({ id, label, counties, inputValue, onChange }) {
           aria-label={`${label} suggestions`}
         >
           {suggestions.length === 0 ? (
-            <li className="px-3 py-2 text-sm text-app-muted">No counties match</li>
+            <li className="px-3 py-2 text-sm text-app-muted">
+              No counties match
+            </li>
           ) : (
             suggestions.map((county) => (
               <li key={county.fips}>
@@ -452,13 +547,20 @@ function CompareCountyInput({ id, label, counties, inputValue, onChange }) {
                   className="w-full px-3 py-2 text-left text-sm hover:bg-app-primary-light/70"
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => {
-                    onChange({ input: toCountyLabel(county), fips: county.fips });
+                    onChange({
+                      input: toCountyLabel(county),
+                      fips: county.fips,
+                    });
                     setOpen(false);
                   }}
                 >
-                  <span className="font-medium text-app-text">{county.name} County</span>
+                  <span className="font-medium text-app-text">
+                    {county.name} County
+                  </span>
                   <span className="text-app-muted">, {county.state}</span>
-                  <span className="ml-1 text-xs text-app-muted">({county.fips})</span>
+                  <span className="ml-1 text-xs text-app-muted">
+                    ({county.fips})
+                  </span>
                 </button>
               </li>
             ))
@@ -472,15 +574,23 @@ function CompareCountyInput({ id, label, counties, inputValue, onChange }) {
 function KpiCard({ label, value }) {
   return (
     <article className="rounded-xl bg-app-surface p-4 shadow-sm">
-      <p className="text-xs font-medium tracking-wide text-app-muted uppercase">{label}</p>
-      <p className="mt-1 text-2xl font-bold tracking-tight text-app-text">{value}</p>
+      <p className="text-xs font-medium tracking-wide text-app-muted uppercase">
+        {label}
+      </p>
+      <p className="mt-1 text-2xl font-bold tracking-tight text-app-text">
+        {value}
+      </p>
     </article>
   );
 }
 
 function ChartCard({ title, ariaLabel, children }) {
   return (
-    <section role="img" aria-label={ariaLabel} className="rounded-xl bg-app-surface p-5 shadow-sm">
+    <section
+      role="img"
+      aria-label={ariaLabel}
+      className="rounded-xl bg-app-surface p-5 shadow-sm"
+    >
       <h2 className="mb-3 text-lg font-semibold text-app-text">{title}</h2>
       {children}
     </section>
@@ -493,12 +603,17 @@ function RankedList({ title, counties, scoreKey }) {
       <h2 className="mb-3 text-lg font-semibold text-app-text">{title}</h2>
       <div className="space-y-2">
         {counties.map((county) => (
-          <div key={`${title}-${county.fips}`} className="flex items-center justify-between rounded-md border border-app-border px-3 py-2">
+          <div
+            key={`${title}-${county.fips}`}
+            className="flex items-center justify-between rounded-md border border-app-border px-3 py-2"
+          >
             <div>
               <p className="font-medium text-app-text">{county.name} County</p>
               <p className="text-xs text-app-muted">{county.state}</p>
             </div>
-            <span className="text-sm font-semibold text-app-primary">{formatScore(county[scoreKey])}</span>
+            <span className="text-sm font-semibold text-app-primary">
+              {formatScore(county[scoreKey])}
+            </span>
           </div>
         ))}
       </div>
@@ -517,7 +632,7 @@ function SortableHeader({ label, column, sortKey, sortDirection, onSort }) {
       >
         {label}
         <span className="text-xs text-app-muted">
-          {isActive ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+          {isActive ? (sortDirection === "asc" ? "↑" : "↓") : "↕"}
         </span>
       </button>
     </th>
@@ -527,21 +642,35 @@ function SortableHeader({ label, column, sortKey, sortDirection, onSort }) {
 function CompareCard({ county }) {
   return (
     <article className="rounded-lg border border-app-border bg-app-bg p-4">
-      <h3 className="text-base font-semibold text-app-text">{county.name} County</h3>
+      <h3 className="text-base font-semibold text-app-text">
+        {county.name} County
+      </h3>
       <p className="mb-3 text-sm text-app-muted">{county.state}</p>
       <dl className="grid grid-cols-2 gap-y-2 text-sm">
         <dt className="text-app-muted">Overall risk</dt>
-        <dd className="text-right font-medium">{formatScore(county.overallRisk)}</dd>
+        <dd className="text-right font-medium">
+          {formatScore(county.overallRisk)}
+        </dd>
         <dt className="text-app-muted">Heat risk</dt>
-        <dd className="text-right font-medium">{formatScore(county.heatRisk)}</dd>
+        <dd className="text-right font-medium">
+          {formatScore(county.heatRisk)}
+        </dd>
         <dt className="text-app-muted">Flood risk</dt>
-        <dd className="text-right font-medium">{formatScore(county.floodRisk)}</dd>
+        <dd className="text-right font-medium">
+          {formatScore(county.floodRisk)}
+        </dd>
         <dt className="text-app-muted">Wildfire risk</dt>
-        <dd className="text-right font-medium">{formatScore(county.wildfireRisk)}</dd>
+        <dd className="text-right font-medium">
+          {formatScore(county.wildfireRisk)}
+        </dd>
         <dt className="text-app-muted">Avg high temp</dt>
-        <dd className="text-right font-medium">{county.avg_temp_max.toFixed(1)} C</dd>
+        <dd className="text-right font-medium">
+          {county.avg_temp_max.toFixed(1)} C
+        </dd>
         <dt className="text-app-muted">Total rain</dt>
-        <dd className="text-right font-medium">{county.total_rain.toFixed(1)} mm</dd>
+        <dd className="text-right font-medium">
+          {county.total_rain.toFixed(1)} mm
+        </dd>
       </dl>
     </article>
   );
