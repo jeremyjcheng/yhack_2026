@@ -5,3 +5,4 @@ frontend/dist/
 dist/
 node_modules/
 frontend/node_modules/
+__pycache__

@@ -32,6 +32,11 @@ export default defineConfig(({ mode }) => {
         return `${stripped}${joiner}access_token=${encodeURIComponent(mapboxToken)}`;
       },
     },
+    '/api/recommendations': {
+      target: 'http://127.0.0.1:8000',
+      changeOrigin: true,
+      secure: false,
+    },
   };
 
   return {

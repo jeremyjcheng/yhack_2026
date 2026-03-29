@@ -5,6 +5,7 @@ Climate Risk Advisor is an interactive web application for exploring county-leve
 The repository includes:
 
 - A React + Vite frontend with an interactive county map and analytics dashboards.
+- A Python FastAPI backend endpoint for county-to-Gemini recommendations.
 - A small Python data-processing workflow to merge source datasets.
 - Optional FAISS-based nearest-neighbor indexing and querying for similar-county analysis.
 
@@ -73,6 +74,8 @@ The frontend loads county data from `frontend/public/combined_final.csv` and com
 
 ```text
 yhack_2026/
+├─ backend/
+│  └─ api.py
 ├─ frontend/
 │  ├─ public/
 │  │  └─ combined_final.csv
@@ -107,12 +110,15 @@ Create a `.env` file in the repository root:
 
 ```bash
 MAPBOX_ACCESS_TOKEN=your_mapbox_token_here
+NEWSAPI_API_KEY=your_eventregistry_api_key_here
+GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
 Notes:
 
 - `vite.config.js` reads `MAPBOX_ACCESS_TOKEN` from the repo root (or `frontend/`) and injects it for map rendering.
 - Geocoding requests are proxied through `/api/mapbox/*` so geocode URLs in the client do not need to hardcode the token.
+- County recommendation requests are proxied through `/api/recommendations` to the FastAPI backend.
 - If you change `.env`, restart the Vite dev server.
 
 ## Quick Start
@@ -130,9 +136,32 @@ npm install
 npm run dev
 ```
 
-3) Open the local URL printed by Vite (typically `http://localhost:5173`).
+3) Install backend dependencies:
 
-4) Optional production build:
+```bash
+cd ..
+python3 -m pip install fastapi uvicorn requests eventregistry
+```
+
+4) Start the FastAPI backend (in a second terminal from repo root):
+
+```bash
+uvicorn backend.api:app --reload --host 127.0.0.1 --port 8000
+```
+
+5) Open the local URL printed by Vite (typically `http://localhost:5173`).
+
+County flow behavior:
+
+- Click a county -> side panel `Recommended Actions` shows a loading indicator.
+- The recommendation panel shows hazard filter buttons: `All`, `Heat`, `Flood`, `Wildfire`.
+- Default selected filter is the county's highest risk hazard.
+- A single API call per county fetches all four hazard sections and caches them client-side.
+- Changing filter does not make additional API calls; it only swaps cached bullet points locally.
+- When API returns, Gemini recommendations are displayed as bullet points for readability.
+- If generation fails/times out, the panel shows an empty-state message.
+
+6) Optional production build:
 
 ```bash
 npm run build
@@ -218,6 +247,12 @@ Each hazard score is converted from a 0-100 scale to a 0-1 value. Overall risk i
 
 - Place/city/ZIP geocoding depends on the Mapbox proxy route.
 - Confirm the app is running through Vite (`npm run dev` or `npm run preview`) so `/api/mapbox` proxy is active.
+
+### County recommendations stay empty
+
+- Ensure FastAPI is running at `http://127.0.0.1:8000`.
+- Ensure `NEWSAPI_API_KEY` and `GEMINI_API_KEY` are present in repo-root `.env`.
+- Verify frontend is started through Vite so `/api/recommendations` proxy is active.
 
 ### Map data appears empty
 
