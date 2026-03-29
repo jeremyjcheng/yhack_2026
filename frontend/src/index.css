@@ -50,3 +50,36 @@ body {
 .mapboxgl-ctrl-attrib {
   font-size: 11px !important;
 }
+
+/* Welcome carousel: smooth enter when slide index changes */
+@keyframes welcome-carousel-main {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes welcome-carousel-peek {
+  from {
+    opacity: 0.55;
+    transform: scale(0.93);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.welcome-carousel-animate-main {
+  animation: welcome-carousel-main 2.5s cubic-bezier(0.33, 1, 0.68, 1) both;
+  transform: translateZ(0);
+}
+
+.welcome-carousel-animate-peek {
+  animation: welcome-carousel-peek 2.2s cubic-bezier(0.33, 1, 0.68, 1) both;
+  transform: translateZ(0);
+}

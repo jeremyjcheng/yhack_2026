@@ -5,23 +5,23 @@ const AUTHOR_SLOTS = [
     college: "UC San Diego",
     year: "Junior",
     linkedin: "https://www.linkedin.com/in/jeremy-cheng-8978881b7/",
-    github: "https://github.com/jeremycheng",
+    github: "https://github.com/jeremyjcheng",
   },
   {
     name: "Eric Wang",
     role: "Developer",
     college: "Yale University",
     year: "Junior",
-    linkedin: "https://www.linkedin.com/in/ericwang",
-    github: "https://github.com/ericwang",
+    linkedin: "https://www.linkedin.com/in/ericwang343/",
+    github: "https://github.com/ImJustEric",
   },
   {
     name: "Cole Haynes",
     role: "Developer",
     college: "Yale University",
     year: "Junior",
-    linkedin: "https://www.linkedin.com/in/colehaynes",
-    github: "https://github.com/colehaynes",
+    linkedin: "https://www.linkedin.com/in/cole-haynes-837403259/",
+    github: "https://github.com/coleh44",
   },
 ];
 
@@ -46,8 +46,18 @@ const FEATURES = [
     description:
       "Explore climate risk for every U.S. county with hover tooltips, click-to-select details, and fly-to navigation across heat, flood, and wildfire layers.",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-7 w-7">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        className="h-7 w-7"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z"
+        />
       </svg>
     ),
   },
@@ -56,8 +66,18 @@ const FEATURES = [
     description:
       "Get hazard-specific recommendations powered by Gemini and grounded in real-time news context from Event Registry for any selected county.",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-7 w-7">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        className="h-7 w-7"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"
+        />
       </svg>
     ),
   },
@@ -66,8 +86,18 @@ const FEATURES = [
     description:
       "Ask questions grounded in FEMA NRI documentation and real county data. The RAG pipeline retrieves relevant methodology and statistics for data-backed answers.",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-7 w-7">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 0 1 1.037-.443 48.282 48.282 0 0 0 5.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        className="h-7 w-7"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 0 1 1.037-.443 48.282 48.282 0 0 0 5.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z"
+        />
       </svg>
     ),
   },
@@ -76,8 +106,18 @@ const FEATURES = [
     description:
       "Analyze national trends with KPI cards, risk histograms, state rankings, top/bottom county lists, sortable tables, and side-by-side county comparisons.",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-7 w-7">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        className="h-7 w-7"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"
+        />
       </svg>
     ),
   },
@@ -86,8 +126,18 @@ const FEATURES = [
     description:
       "Find counties with comparable risk profiles using FAISS nearest-neighbor search over normalized hazard feature vectors.",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-7 w-7">
-        <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        className="h-7 w-7"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+        />
       </svg>
     ),
   },
@@ -96,8 +146,18 @@ const FEATURES = [
     description:
       "View composite and per-hazard risk scores for heat waves, inland/coastal flooding, hurricanes, wildfires, and drought using FEMA NRI methodology.",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-7 w-7">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        className="h-7 w-7"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z"
+        />
       </svg>
     ),
   },
@@ -128,21 +188,25 @@ const DATA_SOURCES = [
   {
     name: "FEMA National Risk Index",
     url: "https://hazards.fema.gov/nri/",
-    description: "Hazard risk scores, expected annual loss, exposure, and historic loss ratios for every U.S. county.",
+    description:
+      "Hazard risk scores, expected annual loss, exposure, and historic loss ratios for every U.S. county.",
   },
   {
     name: "FEMA NRI Technical Documentation",
-    description: "Detailed methodology PDF used by the RAG chatbot to explain risk scoring and hazard calculations.",
+    description:
+      "Detailed methodology PDF used by the RAG chatbot to explain risk scoring and hazard calculations.",
   },
   {
     name: "US Atlas (TopoJSON)",
     url: "https://github.com/topojson/us-atlas",
-    description: "County boundary geometries rendered on the interactive map via jsDelivr CDN.",
+    description:
+      "County boundary geometries rendered on the interactive map via jsDelivr CDN.",
   },
   {
     name: "Event Registry",
     url: "https://eventregistry.org/",
-    description: "Real-time news API providing context for AI-generated county recommendations.",
+    description:
+      "Real-time news API providing context for AI-generated county recommendations.",
   },
 ];
 
@@ -156,7 +220,12 @@ function LinkedInIcon() {
 
 function GitHubIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden>
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="h-4 w-4"
+      aria-hidden
+    >
       <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
     </svg>
   );
@@ -214,9 +283,9 @@ export default function AboutPage() {
               </h1>
               <p className="max-w-2xl text-lg leading-relaxed text-app-muted">
                 Climate Risk Advisor is an interactive web app for exploring
-                county-level climate risk across the United States. We built it to
-                make climate hazard data easier to understand, compare, and act on
-                for local planning and awareness.
+                county-level climate risk across the United States. We built it
+                to make climate hazard data easier to understand, compare, and
+                act on for local planning and awareness.
               </p>
             </div>
             <div className="hidden sm:flex sm:flex-col sm:items-center sm:gap-2">
@@ -225,7 +294,9 @@ export default function AboutPage() {
                 alt="YHack 2026"
                 className="h-20 w-20 rounded-2xl object-contain"
               />
-              <span className="text-xs font-medium text-app-muted">YHack 2026</span>
+              <span className="text-xs font-medium text-app-muted">
+                YHack 2026
+              </span>
             </div>
           </div>
         </header>
@@ -439,9 +510,9 @@ export default function AboutPage() {
 
         {/* Disclaimer footer */}
         <footer className="mt-10 rounded-2xl border border-app-border bg-app-surface/60 px-8 py-6 text-center text-xs leading-relaxed text-app-muted">
-          This project is intended for educational and exploratory analysis. It does
-          not replace official risk assessments, engineering evaluations, insurance
-          guidance, or emergency management directives.
+          This project is intended for educational and exploratory analysis. It
+          does not replace official risk assessments, engineering evaluations,
+          insurance guidance, or emergency management directives.
         </footer>
       </div>
     </main>
