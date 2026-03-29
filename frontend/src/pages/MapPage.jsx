@@ -1,4 +1,5 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import useCountyData from '../hooks/useCountyData';
 import SearchBar from '../components/SearchBar';
 import MapView from '../components/MapView';
@@ -9,6 +10,7 @@ import LoadingOverlay from '../components/LoadingOverlay';
 
 export default function MapPage() {
   const { loading, geojson, countyDataMap, allCounties } = useCountyData();
+  const [searchParams] = useSearchParams();
 
   const [selectedFips, setSelectedFips] = useState(null);
   const [activeLayer, setActiveLayer] = useState('all');
@@ -20,6 +22,7 @@ export default function MapPage() {
   });
 
   const mapRef = useRef(null);
+  const lastDeepLinkedFipsRef = useRef(null);
 
   const selectedCounty = selectedFips ? countyDataMap[selectedFips] : null;
 
@@ -48,6 +51,27 @@ export default function MapPage() {
   const handleHoverEnd = useCallback(() => {
     setHoverInfo(null);
   }, []);
+
+  useEffect(() => {
+    if (loading) return;
+
+    const requestedFips = searchParams.get('fips');
+    if (!requestedFips) return;
+
+    const normalizedFips = String(requestedFips).padStart(5, '0');
+    if (lastDeepLinkedFipsRef.current === normalizedFips) return;
+
+    const county = countyDataMap[normalizedFips];
+    if (!county) {
+      lastDeepLinkedFipsRef.current = normalizedFips;
+      return;
+    }
+
+    setSelectedFips(normalizedFips);
+    setHoverInfo(null);
+    mapRef.current?.flyTo({ center: [county.lon, county.lat], zoom: 7, duration: 1000 });
+    lastDeepLinkedFipsRef.current = normalizedFips;
+  }, [loading, countyDataMap, searchParams]);
 
   return (
     <>
