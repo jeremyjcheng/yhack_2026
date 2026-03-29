@@ -1,0 +1,52 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  --color-app-bg: #f8fafc;
+  --color-app-surface: #ffffff;
+  --color-app-text: #1e293b;
+  --color-app-muted: #64748b;
+  --color-app-border: #e2e8f0;
+  --color-app-primary: #2563eb;
+  --color-app-primary-light: #dbeafe;
+  --color-risk-heat: #ef4444;
+  --color-risk-flood: #3b82f6;
+  --color-risk-fire: #f97316;
+  --color-risk-low: #22c55e;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+}
+
+:root {
+  --color-bg: #f8fafc;
+  --color-white: #ffffff;
+  --color-text: #1e293b;
+  --color-text-secondary: #64748b;
+  --color-border: #e2e8f0;
+  --color-primary: #2563eb;
+  --color-primary-light: #dbeafe;
+  --color-heat: #ef4444;
+  --color-flood: #3b82f6;
+  --color-fire: #f97316;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  overflow: hidden;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.mapboxgl-ctrl-attrib {
+  font-size: 11px !important;
+}
