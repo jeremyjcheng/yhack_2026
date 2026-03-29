@@ -1,0 +1,11 @@
+{
+  "source_pdf": "/Users/jeremycheng/Documents/yhack_2026/data/fema_national-risk-index_technical-documentation.pdf",
+  "embedding_model": "gemini-embedding-001",
+  "created_at_utc": "2026-03-29T04:15:37.634256+00:00",
+  "chunk_size": 1000,
+  "chunk_overlap": 200,
+  "num_chunks": 1209,
+  "embedding_dim": 3072,
+  "index_type": "IndexFlatIP",
+  "normalized": true
+}

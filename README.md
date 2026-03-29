@@ -5,9 +5,9 @@ Climate Risk Advisor is an interactive web application for exploring county-leve
 The repository includes:
 
 - A React + Vite frontend with an interactive county map and analytics dashboards.
-- A Python FastAPI backend endpoint for county-to-Gemini recommendations.
+- Python FastAPI endpoints for county recommendations and FEMA-PDF-grounded chat answers.
 - A small Python data-processing workflow to merge source datasets.
-- Optional FAISS-based nearest-neighbor indexing and querying for similar-county analysis.
+- Optional FAISS utilities for nearest-county similarity and FEMA PDF RAG indexing.
 
 ## How to run this application
 
@@ -15,7 +15,7 @@ You need **two terminals**: one for the Vite frontend and one for the FastAPI ba
 
 1. **Prerequisites:** Node.js 18+, npm, Python 3.10+, a [Mapbox](https://www.mapbox.com/) access token.
 
-2. **Environment:** From the repository root, create a `.env` file (see [Environment Variables](#environment-variables)). At minimum set `MAPBOX_ACCESS_TOKEN` for the map and geocoding. For AI recommendations, set `NEWSAPI_API_KEY` (Event Registry) and `GEMINI_API_KEY`.
+2. **Environment:** From the repository root, create a `.env` file (see [Environment Variables](#environment-variables)). At minimum set `MAPBOX_ACCESS_TOKEN` for the map and geocoding. For AI recommendations and chat, set `NEWSAPI_API_KEY` (Event Registry) and `GEMINI_API_KEY`.
 
 3. **Frontend (terminal 1):**
 
@@ -25,7 +25,7 @@ You need **two terminals**: one for the Vite frontend and one for the FastAPI ba
    npm run dev
    ```
 
-   Vite prints a local URL (usually `http://localhost:5173`). Open it in your browser. The dev server proxies `/api/mapbox` and `/api/recommendations`, so use this URL—not a static file open of `index.html`.
+   Vite prints a local URL (usually `http://localhost:5173`). Open it in your browser. The dev server proxies `/api/mapbox`, `/api/recommendations`, and `/api/chat`, so use this URL—not a static file open of `index.html`.
 
 4. **Backend (terminal 2), from the repository root:**
 
@@ -49,6 +49,7 @@ For data regeneration, FAISS, and troubleshooting, see the sections below.
 - [Prerequisites](#prerequisites)
 - [Environment Variables](#environment-variables)
 - [Running the application (step-by-step)](#running-the-application-step-by-step)
+- [FEMA PDF RAG for Chat](#fema-pdf-rag-for-chat)
 - [Data Workflow](#data-workflow)
 - [Running FAISS Similarity Search](#running-faiss-similarity-search)
 - [Risk Scoring Method](#risk-scoring-method)
@@ -127,6 +128,7 @@ yhack_2026/
 ├─ scripts/
 │  ├─ merge_risk_data.py
 │  ├─ build_faiss_index.py
+│  ├─ build_fema_pdf_index.py
 │  └─ query_faiss_neighbors.py
 ```
 
@@ -151,6 +153,7 @@ Notes:
 - `vite.config.js` reads `MAPBOX_ACCESS_TOKEN` from the repo root (or `frontend/`) and injects it for map rendering.
 - Geocoding requests are proxied through `/api/mapbox/*` so geocode URLs in the client do not need to hardcode the token.
 - County recommendation requests are proxied through `/api/recommendations` to the FastAPI backend.
+- County data chat requests are proxied through `/api/chat` to the FastAPI backend.
 - If you change `.env`, restart the Vite dev server.
 
 ## Running the application (step-by-step)
@@ -200,6 +203,45 @@ County flow behavior:
    npm run build
    npm run preview
    ```
+
+## FEMA PDF RAG for Chat
+
+The `/api/chat` endpoint is grounded on the FEMA technical documentation PDF using an offline FAISS index.
+
+### 1) Build FEMA PDF retrieval artifacts
+
+Run this once (or whenever the source PDF changes):
+
+```bash
+python3 scripts/build_fema_pdf_index.py \
+  --pdf-path data/fema_national-risk-index_technical-documentation.pdf \
+  --out-index data/FAISS/fema_pdf.index \
+  --out-chunks data/FAISS/fema_pdf_chunks.jsonl \
+  --out-meta data/FAISS/fema_pdf_meta.json
+```
+
+### 2) Start backend and frontend
+
+Start backend:
+
+```bash
+uvicorn backend.api:app --reload --host 127.0.0.1 --port 8000
+```
+
+Start frontend in another terminal:
+
+```bash
+cd frontend
+npm run dev
+```
+
+### 3) Test chat API directly (optional)
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"question":"How does FEMA define Expected Annual Loss?","history":[]}'
+```
 
 ## Data Workflow
 
@@ -286,6 +328,12 @@ Each hazard score is converted from a 0-100 scale to a 0-1 value. Overall risk i
 - Ensure FastAPI is running at `http://127.0.0.1:8000`.
 - Ensure `NEWSAPI_API_KEY` and `GEMINI_API_KEY` are present in repo-root `.env`.
 - Verify frontend is started through Vite so `/api/recommendations` proxy is active.
+
+### Chat endpoint returns missing FEMA artifact error
+
+- Build the FEMA RAG files with `python3 scripts/build_fema_pdf_index.py`.
+- Confirm these files exist: `data/FAISS/fema_pdf.index`, `data/FAISS/fema_pdf_chunks.jsonl`, `data/FAISS/fema_pdf_meta.json`.
+- Ensure `GEMINI_API_KEY` is set before building and querying.
 
 ### Map data appears empty
 
