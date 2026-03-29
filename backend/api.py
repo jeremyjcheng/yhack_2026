@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+
+os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
 
 from backend.fema_pdf_rag import answer_from_fema_pdf
 
