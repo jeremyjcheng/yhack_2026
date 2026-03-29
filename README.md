@@ -4,8 +4,8 @@ Climate Risk Advisor is an interactive web application for exploring county-leve
 
 The repository includes:
 
-- A React + Vite frontend with an interactive county map, analytics dashboards, and an About page.
-- A Python FastAPI backend powering AI county recommendations and a RAG-based climate risk chatbot.
+- A React + Vite frontend with a welcome carousel, interactive county map, analytics dashboards, and an About page.
+- A Python FastAPI backend powering AI county recommendations (via Lava-forwarded OpenAI) and a RAG-based climate risk chatbot (via Gemini).
 - Data-processing and FAISS indexing scripts for similarity search and document retrieval.
 - A FEMA PDF RAG pipeline that combines documentation methodology with actual county-level data to answer questions.
 
@@ -69,9 +69,10 @@ You need **two terminals**: one for the Vite frontend and one for the FastAPI ba
 - **Risk layer switching** between overall, heat, flood, and wildfire views with a color legend.
 - **County and place search** with local fuzzy matching and Mapbox geocoding fallback.
 - **Side panel** showing key climate stats, animated risk bars, AI recommendations, and similar counties.
-- **AI county recommendations** powered by Gemini via Event Registry news context, with per-hazard tabs (All, Heat, Flood, Wildfire).
+- **AI county recommendations** powered by GPT-4o-mini (routed through [Lava](https://lava.so) forwarding proxy) with Event Registry news context, per-hazard tabs (All, Heat, Flood, Wildfire).
 - **Climate Risk Advisor chatbot** -- a floating widget grounded on the FEMA NRI technical documentation and actual county data. It answers questions with concise, data-backed bullet points.
 - **Insights dashboard** with KPI cards, risk histograms, state-level rankings, top/bottom county lists, sortable/paginated tables, and side-by-side county comparison.
+- **Welcome carousel** -- an auto-advancing image carousel introducing the app's key pages.
 - **About page** with project description, authors, and tech stack summary.
 - **FAISS similarity search** scripts for nearest-neighbor county analysis.
 
@@ -92,7 +93,8 @@ You need **two terminals**: one for the Vite frontend and one for the FastAPI ba
 
 - Python 3.10+
 - FastAPI + Uvicorn
-- Google Gemini API (generation and embeddings)
+- Google Gemini API (chatbot generation and embeddings)
+- Lava forwarding proxy (routes recommendation prompts to OpenAI GPT-4o-mini)
 - FAISS (vector similarity search and PDF RAG retrieval)
 - pandas, numpy, scikit-learn
 - pypdf (PDF text extraction)
@@ -107,17 +109,14 @@ yhack_2026/
 ├── .gitignore
 ├── README.md
 ├── requirements.txt              # Python dependencies
-├── run_news_to_lava.py           # News + Lava recommendation pipeline
-├── lava_prompt.py                # Lava prompt templates for recommendations
-├── output_news.py                # Event Registry news fetching
 ├── data_collection.ipynb         # Data collection and exploration notebook
 │
 ├── backend/
 │   ├── api.py                    # FastAPI app: /api/recommendations, /api/chat
 │   ├── fema_pdf_rag.py           # FEMA PDF + county data RAG pipeline
-│   ├── gemini_prompt.py          # Gemini prompt templates for recommendations
+│   ├── lava_prompt.py            # Lava prompt builder and OpenAI-via-Lava caller
 │   ├── output_news.py            # Event Registry news fetching
-│   └── run_news_to_gemini.py     # News + Gemini recommendation pipeline
+│   └── run_news_to_lava.py       # News + Lava (GPT-4o-mini) recommendation pipeline
 │
 ├── frontend/
 │   ├── index.html
@@ -128,7 +127,7 @@ yhack_2026/
 │   │   └── county-data.json
 │   └── src/
 │       ├── main.jsx              # App entry point
-│       ├── App.jsx               # React Router setup (/, /insights, /about)
+│       ├── App.jsx               # React Router setup (/, /map, /insights, /about)
 │       ├── index.css             # Global styles
 │       ├── components/
 │       │   ├── GlobalChatWidget.jsx    # Floating climate risk chatbot
@@ -138,6 +137,7 @@ yhack_2026/
 │       │   ├── MapLegend.jsx          # Risk layer toggle legend
 │       │   ├── MapView.jsx            # Mapbox GL county map
 │       │   ├── Navbar.jsx             # Top navigation bar
+│       │   ├── WelcomeCarousel.jsx   # Auto-advancing image carousel
 │       │   ├── Recommendations.jsx    # AI hazard recommendations panel
 │       │   ├── RiskBars.jsx           # Animated risk score bars
 │       │   ├── SearchBar.jsx          # County/place search input
@@ -147,6 +147,7 @@ yhack_2026/
 │       ├── hooks/
 │       │   └── useCountyData.js       # Loads TopoJSON + CSV, builds GeoJSON
 │       ├── pages/
+│       │   ├── WelcomePage.jsx        # Welcome landing page (carousel + open map)
 │       │   ├── MapPage.jsx            # Main map page
 │       │   ├── InsightsPage.jsx       # Analytics dashboard
 │       │   └── AboutPage.jsx          # About page
@@ -200,8 +201,8 @@ LAVA_FORWARD_TOKEN=your_lava_forward_token_here
 |----------|-------------|-------------|
 | `MAPBOX_ACCESS_TOKEN` | Map, geocoding | Renders the county map and powers place/ZIP search |
 | `NEWSAPI_API_KEY` | Recommendations | Event Registry key for news-grounded county recommendations |
-| `GEMINI_API_KEY` | Chat | Google Gemini API key for AI generation and embeddings |
-| `LAVA_FORWARD_TOKEN` | Recommendations | Lava forward token for routing AI requests (GPT via proxy) |
+| `GEMINI_API_KEY` | Chat | Google Gemini API key for chatbot generation and embeddings |
+| `LAVA_FORWARD_TOKEN` | Recommendations | [Lava](https://lava.so) forwarding token -- proxies recommendation prompts to OpenAI GPT-4o-mini |
 
 Notes:
 - `vite.config.js` reads `MAPBOX_ACCESS_TOKEN` from the repo root `.env` and injects it as `import.meta.env.VITE_MAPBOX_TOKEN`.
@@ -261,6 +262,14 @@ Navigate to the URL printed by Vite (typically `http://localhost:5173`).
 - Default tab is the county's highest risk hazard.
 - One API call per county fetches all four hazard sections; switching tabs swaps cached results locally.
 - The floating "Risk Advisor" chat button opens the Climate Risk Advisor chatbot.
+
+### How recommendations work
+
+1. The frontend `POST`s county name, state, and FIPS to `/api/recommendations`.
+2. The FastAPI backend invokes `backend/run_news_to_lava.py` as a subprocess.
+3. That script fetches recent news articles for the county via **Event Registry** (`backend/output_news.py`).
+4. For each hazard filter (all, heat, flood, wildfire), news content is formatted into a prompt (`backend/lava_prompt.py`) and sent to **OpenAI GPT-4o-mini** through the **Lava forwarding proxy** (`https://api.lava.so/v1/forward`).
+5. GPT responses are parsed into bullet points and returned as JSON to the frontend.
 
 ### Production build (optional)
 
@@ -382,8 +391,9 @@ Each hazard score is converted from a 0--100 scale to a 0--1 value. Overall risk
 ### County recommendations stay empty
 
 - Ensure FastAPI is running at `http://127.0.0.1:8000`.
-- Ensure `NEWSAPI_API_KEY` and `LAVA_FORWARD_TOKEN` are present in `.env`.
+- Ensure `NEWSAPI_API_KEY` (Event Registry) and `LAVA_FORWARD_TOKEN` (Lava proxy for OpenAI) are present in `.env`.
 - Verify frontend is started through Vite so `/api/recommendations` proxy is active.
+- Check the backend terminal for errors -- a `ModuleNotFoundError` means the pipeline scripts aren't resolving imports (all three files must be in `backend/`).
 
 ### Chat returns "missing FEMA artifact" error
 

@@ -13,7 +13,7 @@ export default function Navbar() {
   return (
     <nav className="relative z-50 flex h-14 items-center justify-between bg-app-primary px-3 text-white shadow-md sm:px-6">
       <Link
-        to="/welcome"
+        to="/"
         className="inline-flex min-w-0 items-center gap-2 rounded-md px-1 py-1 transition-opacity hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-surface/90 focus-visible:ring-offset-2 focus-visible:ring-offset-app-primary"
       >
         <div className="shrink-0">
@@ -31,10 +31,10 @@ export default function Navbar() {
         </span>
       </Link>
       <div className="flex items-center gap-1">
-        <NavLink to="/welcome" className={tabClass}>
+        <NavLink to="/" end className={tabClass}>
           Welcome
         </NavLink>
-        <NavLink to="/" end className={tabClass}>
+        <NavLink to="/map" className={tabClass}>
           Map
         </NavLink>
         <NavLink to="/insights" className={tabClass}>

@@ -54,7 +54,7 @@ export default function WelcomePage() {
 
       <div className="mt-auto flex w-full justify-center pb-6">
         <Link
-          to="/"
+          to="/map"
           className="inline-flex h-12 min-w-[200px] items-center justify-center rounded-lg bg-app-primary px-8 text-sm font-semibold text-white shadow-md transition hover:bg-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary focus-visible:ring-offset-2"
         >
           Open map

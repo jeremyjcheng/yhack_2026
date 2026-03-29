@@ -197,7 +197,7 @@ export default function InsightsPage() {
                 ))}
               </div>
               <Link
-                to="/"
+                to="/map"
                 className="text-xs font-medium text-app-primary hover:underline"
               >
                 Back to map
