@@ -8,11 +8,26 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
+from backend.fema_pdf_rag import answer_from_fema_pdf
+
 
 class RecommendationRequest(BaseModel):
     county: str
     state: str | None = None
     fips: str | None = None
+
+
+class ChatHistoryMessage(BaseModel):
+    role: str
+    content: str
+
+
+class ChatRequest(BaseModel):
+    question: str
+    county: str | None = None
+    state: str | None = None
+    fips: str | None = None
+    history: list[ChatHistoryMessage] = []
 
 
 app = FastAPI(title="Climate Risk Advisor API")
@@ -96,3 +111,46 @@ def recommendations(payload: RecommendationRequest) -> dict[str, dict[str, list[
         normalized[key] = [str(item).strip() for item in items if str(item).strip()]
 
     return {"recommendations": normalized}
+
+
+@app.post("/api/chat")
+def chat(payload: ChatRequest) -> dict[str, object]:
+    if not payload.question.strip():
+        raise HTTPException(status_code=400, detail="question is required")
+
+    try:
+        response = answer_from_fema_pdf(
+            repo_root=REPO_ROOT,
+            question=payload.question.strip(),
+            county=payload.county.strip() if payload.county else None,
+            state=payload.state.strip() if payload.state else None,
+            fips=payload.fips.strip() if payload.fips else None,
+            history=[
+                {"role": msg.role.strip(), "content": msg.content.strip()}
+                for msg in payload.history
+                if msg.content.strip()
+            ],
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except Exception as exc:  # pragma: no cover - defensive guard
+        raise HTTPException(status_code=500, detail="Failed to answer chat request") from exc
+
+    answer = str(response.get("answer", "")).strip()
+    citations = response.get("citations", [])
+    debug_context = response.get("debug_context", {})
+
+    if not answer:
+        raise HTTPException(status_code=502, detail="Empty chat response")
+    if not isinstance(citations, list):
+        citations = []
+    if not isinstance(debug_context, dict):
+        debug_context = {}
+
+    return {
+        "answer": answer,
+        "citations": [str(item).strip() for item in citations if str(item).strip()],
+        "debug_context": debug_context,
+    }
